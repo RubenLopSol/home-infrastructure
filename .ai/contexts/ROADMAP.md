@@ -4,7 +4,7 @@ Mark a phase complete only when its exit criteria, documentation, and evidence
 are complete. Partial work remains incomplete and should be described in current
 state or a task note.
 
-- [ ] Phase 0 - Context System, Baseline, and Architecture Control
+- [x] Phase 0 - Context System, Baseline, and Architecture Control
   - Refactor project context into small loaded files and detailed docs.
   - Preserve original context documents under `docs/reference/original-context/`.
   - Initialize Git as the source of truth after review.

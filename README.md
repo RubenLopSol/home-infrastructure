@@ -70,10 +70,10 @@ Esa separación es dirección objetivo. No está desplegada todavía.
 Estado verificado:
 
 - Ruta local: `/home/kiyana/Desktop/project-home`.
-- El proyecto todavía no es un repositorio Git válido.
-- Existe un `.git` placeholder, inspeccionado como `tmpfs` read-only, vacío y
-  no válido.
-- No hay remote Git configurado.
+- El proyecto ya es un repositorio Git válido.
+- Rama principal: `main`.
+- Remote: `origin` -> `git@github.com:RubenLopSol/home-infrastructure.git`.
+- Baseline inicial: `01595d3` (`Initial project baseline`).
 - La implementación de infraestructura no ha empezado.
 - Ubuntu Server todavía no está instalado.
 - No existen directorios de implementación para Ansible, Terraform,
@@ -101,8 +101,8 @@ implementado ni cerrado como decisión final.
 | Área | Tecnología / enfoque | Estado |
 |---|---|---|
 | Fuente de verdad | Git | DECIDED |
-| Repositorio local | Baseline Git pendiente | TBD |
-| Remote / hosting | Proveedor y URL remota | TBD |
+| Repositorio local | Git en rama `main` | DECIDED / CURRENT |
+| Remote / hosting | GitHub: `RubenLopSol/home-infrastructure` | DECIDED / CURRENT |
 | Host inicial | Acer Aspire E5-571G | DECIDED |
 | Sistema operativo | Ubuntu Server 26.04.1 LTS | DECIDED |
 | Gestión de configuración | Herramienta exacta pendiente | TBD |
@@ -213,7 +213,8 @@ Resumen de fases:
 | 11 | Incorporar primeros servicios domésticos |
 | 12 | Practicar fiabilidad, restore y mejora continua |
 
-El siguiente paso inmediato del proyecto es resolver el baseline Git inicial.
+El siguiente paso inmediato del proyecto es iniciar la fase de inventario del
+host y la red.
 
 El roadmap detallado está en `docs/architecture/project-roadmap.md`.
 

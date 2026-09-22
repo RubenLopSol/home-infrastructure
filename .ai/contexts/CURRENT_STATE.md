@@ -6,6 +6,10 @@ pending revalidation.
 ## Repository
 
 - Current directory: `/home/kiyana/Desktop/project-home`.
+- The project is now a valid Git repository.
+- Current Git branch: `main`.
+- Git remote: `origin` -> `git@github.com:RubenLopSol/home-infrastructure.git`.
+- Initial baseline commit: `01595d3` (`Initial project baseline`).
 - Original source documents are now preserved at:
   - `docs/reference/original-context/CONTEXT_PROJECT_HOME.txt`
   - `docs/reference/original-context/CONTEXTO_OPENPANEL_Y_PROJECT_DEVOPS_PARA_CHATGPT.txt`
@@ -15,7 +19,8 @@ pending revalidation.
 
 ## Project Phase
 
-- The project is still designing the repository/context system.
+- Phase 0 repository/context baseline is complete.
+- The next phase is host and network inventory.
 - Infrastructure implementation has not started.
 - No Kubernetes, Terraform, Ansible, GitOps, NAS, dedicated firewall/router,
   VLAN, AdGuard Home, SOPS/age, GitHub Actions, Argo CD, or Argo Rollouts

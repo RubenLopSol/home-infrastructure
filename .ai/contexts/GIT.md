@@ -6,19 +6,13 @@ and configuration.
 ## Current State
 
 - Local project path: `/home/kiyana/Desktop/project-home`.
-- The project is currently not a valid Git repository.
-- No Git remote is configured.
-- Hosting provider: TBD.
-
-The existing `.git` directory was inspected and found to be:
-
-- empty
-- read-only
-- mounted as a `tmpfs` mountpoint
-- not a valid Git repository
-
-It must be unmounted/removed before a normal repository can be initialized at
-this path.
+- The project is a valid Git repository.
+- Current branch: `main`.
+- Remote: `origin`.
+- Remote URL: `git@github.com:RubenLopSol/home-infrastructure.git`.
+- Hosting provider: GitHub.
+- Initial baseline commit: `01595d3` (`Initial project baseline`).
+- Local `main` is tracking `origin/main`.
 
 ## Decisions
 
@@ -31,9 +25,10 @@ this path.
 ## Repository
 
 - Local path: `/home/kiyana/Desktop/project-home`
-- Remote: TBD
-- Hosting: TBD
-- Default branch: TBD
+- Remote: `origin`
+- Remote URL: `git@github.com:RubenLopSol/home-infrastructure.git`
+- Hosting: GitHub
+- Default branch: `main`
 
 ## Versioning
 
@@ -62,9 +57,6 @@ TBD.
 
 ## Open Questions
 
-- When should the repository be initialized after context review?
-- Which hosting provider should be used?
-- What should the default branch be?
 - What branching and commit conventions should be used?
 - What versioning, release, and tagging policy should be adopted?
 - Which repository automation should be introduced, and when?
