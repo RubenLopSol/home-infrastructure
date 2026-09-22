@@ -89,5 +89,59 @@ fresh Ubuntu Server install
   -> validate service or host functionality
 ```
 
-The next Phase 3 task is to define and test the first concrete backup/restore
-procedure using this temporary target.
+The first concrete backup/restore procedure has been defined and tested using
+this temporary target.
+
+## First Concrete Backup/Restore Test
+
+On 2026-09-22, the first concrete `/srv` backup/restore smoke test was run.
+
+Backup source:
+
+```text
+homelab-server-01:/srv/
+```
+
+Backup destination:
+
+```text
+/media/kiyana/BACKUP_2TB/HomeLab/backups/2026-09-22-srv-smoke-test/srv/
+```
+
+`/srv/lost+found/` is excluded because it is an ext4 system directory owned by
+root and is not part of Home Lab application data. The first `rsync` attempt
+returned code 23 only because `/srv/lost+found/` could not be read by the
+normal SSH user. Re-running with `--exclude='lost+found/'` and
+`--delete-excluded` completed with exit code 0.
+
+Restore validation was performed from the external-disk backup into:
+
+```text
+/tmp/homelab-restore-test-2026-09-22/srv/
+```
+
+The restored smoke-test file matched the source file hash:
+
+```text
+220e56aedf4ccd66a512f21f1daefe0b070954bc6871fc45f0749b75e13789f1
+```
+
+The external exFAT disk was briefly observed mounted read-only with
+`errors=remount-ro` after a USB disconnect/cache synchronization failure. A
+non-repair check with `fsck.exfat -n /dev/sda1` reported the filesystem clean,
+and the disk was later observed mounted read/write again.
+
+Restore evidence was then written to:
+
+```text
+/media/kiyana/BACKUP_2TB/HomeLab/restore-tests/2026-09-22-srv-smoke-test/srv/
+```
+
+The backup and restore-test file hashes matched:
+
+```text
+220e56aedf4ccd66a512f21f1daefe0b070954bc6871fc45f0749b75e13789f1
+```
+
+Do not format, repartition, or destructively repair this disk without a future
+explicit decision because it contains pre-existing non-Home-Lab data.

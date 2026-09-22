@@ -32,13 +32,15 @@ state or a task note.
   - Exit: Phase 2 remains open until Phase 2B is reviewed or deliberately
     deferred into a later roadmap phase.
 
-- [ ] Phase 3 - Host, Storage, and Backup Foundation
+- [x] Phase 3 - Host, Storage, and Backup Foundation
   - [x] Initial storage layout decision: create 80 GiB `/srv` LV and keep
     remaining VG space reserved.
   - [x] Apply and validate `/srv` mount on the server.
   - [x] Define target backup direction: future NAS with two disks in RAID1.
   - [x] Define temporary backup target: existing external `BACKUP_2TB` disk.
-  - [ ] Define and test first concrete backup/restore procedure.
+  - [x] Define and test first concrete backup/restore procedure.
+  - [x] Safely check `BACKUP_2TB` after it was observed remounted read-only
+    with `errors=remount-ro`.
   - Exit: durable storage and basic restore path are tested.
 
 - [ ] Phase 4 - Application Platform

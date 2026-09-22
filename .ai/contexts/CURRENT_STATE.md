@@ -25,6 +25,7 @@ pending revalidation.
 - Phase 2A current-network baseline is complete for the hardware currently available.
 - Phase 2B future network design is pending future hardware purchases and decisions.
 - Ubuntu Server base installation is complete.
+- Phase 3 host, storage, and backup foundation is complete.
 - Infrastructure platform implementation has not started.
 - No Kubernetes, Terraform, Ansible, GitOps, NAS, dedicated firewall/router,
   managed switch, dedicated wired AP, UPS, VLAN, AdGuard Home, SOPS/age,
@@ -154,6 +155,21 @@ pending revalidation.
 - The external disk uses exFAT and has approximately 1.8 TiB usable capacity.
 - Provisional Home Lab backup area exists at
   `/media/kiyana/BACKUP_2TB/HomeLab/`.
+- First `/srv` backup/restore smoke test was completed on 2026-09-22:
+  - backup path:
+    `/media/kiyana/BACKUP_2TB/HomeLab/backups/2026-09-22-srv-smoke-test/srv/`
+  - `/srv/lost+found/` is excluded from the backup because it is an ext4 system
+    directory owned by root and is not Home Lab application data.
+  - restore was validated from the external-disk backup into
+    `/tmp/homelab-restore-test-2026-09-22/srv/`.
+  - restore evidence was also written to:
+    `/media/kiyana/BACKUP_2TB/HomeLab/restore-tests/2026-09-22-srv-smoke-test/srv/`.
+  - source and restored smoke-test file SHA256 matched:
+    `220e56aedf4ccd66a512f21f1daefe0b070954bc6871fc45f0749b75e13789f1`.
+- During restore validation, `BACKUP_2TB` was briefly observed mounted
+  read-only with `errors=remount-ro` after a USB disconnect/cache
+  synchronization failure. `fsck.exfat -n /dev/sda1` reported the filesystem
+  clean, and the disk was later observed mounted read/write again.
 - The 64 GB USB device is not the primary Home Lab backup target.
 - No final backup tool, retention policy, encryption model, NAS share layout, or
   off-site strategy has been selected yet.

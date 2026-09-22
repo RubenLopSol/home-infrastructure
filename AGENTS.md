@@ -14,7 +14,8 @@ inspect -> understand -> propose -> review -> implement -> test -> document
 
 AI/token cost is a first-class project requirement.
 
-- Current default: GPT-5.5 with low reasoning.
+- Use the cheapest available model sufficient for the task. Current preferred
+  default: GPT-5.6 Luna with low reasoning.
 - Never increase reasoning effort or switch to a more expensive model
   automatically.
 - If the current model or reasoning level is insufficient, stop and ask for
