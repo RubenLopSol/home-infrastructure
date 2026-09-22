@@ -134,8 +134,9 @@ Kingston SSD ~223.57 GiB
         └── ~120.5 GiB free inside the VG
 ```
 
-The free space inside `ubuntu-vg` is intentionally unallocated. Its use will be
-decided later.
+The original free space inside `ubuntu-vg` was intentionally left unallocated
+during installation. In Phase 3, an 80 GiB `srv-lv` was created for `/srv`,
+leaving approximately 40.52 GiB free in the VG.
 
 Observed block devices after installation:
 
@@ -146,6 +147,7 @@ Observed block devices after installation:
 | `sda2` | 2G | part | ext4 | `/boot` | | |
 | `sda3` | 220.5G | part | LVM2_member | | | |
 | `ubuntu--vg-ubuntu--lv` | 100G | lvm | ext4 | `/` | | |
+| `ubuntu--vg-srv--lv` | 80G | lvm | ext4 | `/srv` | | |
 | `sr0` | 190.3M | rom | iso9660 | | Slimtype DVD | `0080F0085100279DF101` |
 
 Observed disk identity:
@@ -186,6 +188,7 @@ Observed filesystem usage:
 | Filesystem | Size | Used | Available | Use | Mountpoint |
 |---|---:|---:|---:|---:|---|
 | `/dev/mapper/ubuntu--vg-ubuntu--lv` | 98G | 7.5G | 86G | 9% | `/` |
+| `/dev/mapper/ubuntu--vg-srv--lv` | 79G | 2.1M | 75G | 1% | `/srv` |
 | `/dev/sda2` | 2.0G | 191M | 1.6G | 11% | `/boot` |
 | `/dev/sda1` | 1.1G | 6.4M | 1.1G | 1% | `/boot/efi` |
 
@@ -196,9 +199,9 @@ Observed LVM state:
 | PV | `/dev/sda3` |
 | VG | `ubuntu-vg` |
 | VG size | `<220.52g` |
-| VG free | `<120.52g` |
-| LV | `ubuntu-lv` |
-| LV size | `100.00g` |
+| VG free | `<40.52g` |
+| Root LV | `ubuntu-lv`, `100.00g` |
+| Persistent data LV | `srv-lv`, `80.00g`, mounted at `/srv` |
 
 ## Networking
 

@@ -33,7 +33,10 @@ state or a task note.
     deferred into a later roadmap phase.
 
 - [ ] Phase 3 - Host, Storage, and Backup Foundation
-  - Define host baseline, storage layout, backup destinations, and restore path.
+  - [x] Initial storage layout decision: create 80 GiB `/srv` LV and keep
+    remaining VG space reserved.
+  - [x] Apply and validate `/srv` mount on the server.
+  - [ ] Define initial backup destination and restore path.
   - Exit: durable storage and basic restore path are tested.
 
 - [ ] Phase 4 - Application Platform

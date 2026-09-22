@@ -67,7 +67,13 @@ pending revalidation.
   - LVM PV: approximately 220.518 GiB.
   - Volume group: `ubuntu-vg`, approximately 220.515 GiB.
   - Logical volume `ubuntu-lv` mounted at `/`: 100 GiB.
-  - Approximately 120.5 GiB remains free in the VG for later allocation.
+- Phase 3 storage change has been applied and validated.
+- Logical volume `srv-lv` exists in `ubuntu-vg` with size 80 GiB.
+- `/srv` is formatted as ext4 with label `homelab-srv` and mounted from
+  `/dev/mapper/ubuntu--vg-srv--lv`.
+- `/srv` filesystem size is approximately 79G, with approximately 75G available
+  immediately after creation.
+- `ubuntu-vg` has approximately 40.52 GiB free after creating `srv-lv`.
 
 ## Initial Network And SSH State
 

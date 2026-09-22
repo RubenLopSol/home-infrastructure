@@ -13,8 +13,11 @@
 - The full Kingston A400 240 GB SSD is used for Ubuntu Server.
 - Installer storage mode: whole disk with LVM enabled.
 - Full-disk encryption/LUKS is disabled for the initial installation.
-- The initial root filesystem logical volume is 100 GiB; remaining VG space is
-  intentionally left unallocated for later decision.
+- The initial root filesystem logical volume is 100 GiB.
+- Create a dedicated 80 GiB LVM logical volume for `/srv` as the initial root
+  for persistent Home Lab data.
+- Keep the remaining free space in `ubuntu-vg` reserved for future growth or
+  new volumes when real requirements exist.
 - OpenSSH Server is installed during OS installation.
 - SSH password authentication is disabled after verifying key-based SSH access.
 - No orchestrator/runtime such as Docker, Podman, MicroK8s, or Kubernetes is
@@ -51,7 +54,6 @@
 
 - Revalidate physical network topology, current devices, ISP/ONT/router
   constraints, Ethernet availability, and Smart View/casting behavior.
-- Decide how to allocate the remaining free space in `ubuntu-vg`.
 - Select Kubernetes distribution and version, if Kubernetes is approved.
 - Select final secret-management implementation.
 - Select backup destinations, off-site provider, retention, and encryption
