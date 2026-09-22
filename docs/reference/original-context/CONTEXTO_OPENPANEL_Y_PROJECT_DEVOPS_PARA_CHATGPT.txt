@@ -1,0 +1,253 @@
+CONTEXTO DE OPENPANEL Y PROJECT-DEVOPS
+Documento para compartir con ChatGPT UI
+Actualizado a partir del contenido local de ambos repositorios.
+
+1. OBJETIVO Y RELACION ENTRE LOS DOS REPOSITORIOS
+
+El proyecto despliega y opera OpenPanel, una plataforma open-source de analítica web y de producto (alternativa a Mixpanel, GA4 o Plausible). Permite recibir eventos, analizarlos mediante embudos/cohortes/perfiles/sesiones, visualizar dashboards en tiempo real, realizar A/B testing y crear alertas.
+
+Hay dos repositorios separados con responsabilidades deliberadamente distintas:
+
+- openpanel/: código fuente de la aplicación (un fork de OpenPanel).
+- Project-DevOps/: plataforma e infraestructura: desarrollo local, Kubernetes, GitOps, CI/CD, observabilidad, seguridad, backups y Terraform.
+
+La separación evita reconstruir imágenes cuando solo cambia infraestructura y mantiene Git como fuente de verdad del estado desplegado. Project-DevOps espera que openpanel exista como directorio hermano al clonar/ejecutar el bootstrap:
+
+  directorio-padre/
+  ├── Project-DevOps/   # este repositorio de infraestructura
+  └── openpanel/        # fork de la aplicación
+
+
+2. OPENPANEL: APLICACION Y ESTRUCTURA
+
+OpenPanel es un monorepo TypeScript gestionado con pnpm (pnpm@10.6.2). Sus tecnologías principales son:
+
+- Next.js: dashboard web.
+- Fastify y tRPC: API y comunicación backend.
+- PostgreSQL: metadatos relacionales y datos de aplicación.
+- ClickHouse: eventos analíticos, adecuado para consultas analíticas.
+- Redis: caché, pub/sub y cola.
+- BullMQ y GroupMQ: trabajos asíncronos.
+- Prisma: esquema y migraciones de PostgreSQL.
+- Tailwind y Shadcn: interfaz.
+- Resend, Arctic y Oslo: correo, OAuth y autenticación.
+
+Estructura relevante:
+
+  openpanel/
+  ├── apps/
+  │   ├── api/                    # API de eventos y backend
+  │   ├── worker/                 # procesa trabajos en segundo plano
+  │   ├── start/                  # dashboard/aplicación de entrada
+  │   ├── public/                 # web pública
+  │   └── justfuckinguseopenpanel/ # aplicación auxiliar del monorepo
+  ├── packages/
+  │   ├── db/                     # acceso a datos, Prisma y migraciones
+  │   ├── trpc/, validation/       # contratos API y validación
+  │   ├── queue/, redis/           # cola y Redis
+  │   ├── auth/, common/, logger/  # piezas transversales
+  │   ├── sdks/, integrations/     # SDKs e integraciones
+  │   ├── email/, geo/, importer/, payments/, json/, etc.
+  ├── docker-compose.yml           # dependencias para desarrollo de la app
+  ├── docker/                      # configuración de ClickHouse
+  ├── self-hosting/                # scripts/configuración de autoalojamiento
+  └── .github/workflows/build-publish.yml
+
+Flujo funcional de datos:
+
+1) Los SDKs clientes envían eventos de analítica a la API.
+2) La API valida y procesa la petición; los eventos van a ClickHouse y los metadatos a PostgreSQL.
+3) Las tareas lentas (agregaciones, retención, exportaciones) se encolan en Redis mediante BullMQ.
+4) El worker consume la cola y persiste resultados en ClickHouse o PostgreSQL.
+5) El dashboard consulta la API, que usa ambos almacenes según el caso.
+
+Desarrollo nativo de OpenPanel (referencia): pnpm install; crear .env desde .env.example; levantar Docker; generar código; ejecutar migraciones; pnpm dev. Los scripts raíz incluyen test (Vitest), lint/formato (Biome), typecheck, codegen y migrate:deploy.
+
+
+3. PROJECT-DEVOPS: ESTRUCTURA
+
+  Project-DevOps/
+  ├── docker-compose.yml           # stack operativo local completo
+  ├── docker/                      # Prometheus, Alertmanager, Grafana, Loki, Promtail, Tempo, ClickHouse
+  ├── grafana-dashboards/          # dashboards JSON: OpenPanel, clúster, logs/trazas
+  ├── k8s/
+  │   ├── apps/
+  │   │   ├── base/openpanel/      # app, BBDD, servicios, ingress, rollout, migración, monitores
+  │   │   └── overlays/staging|prod/ # ajustes por entorno
+  │   └── infrastructure/
+  │       ├── base/                # ArgoCD, namespaces, observabilidad, backup, secretos, TLS, storage
+  │       └── overlays/staging|prod/
+  ├── terraform/
+  │   ├── modules/                 # backup-storage, iam-user, iam-irsa
+  │   └── environments/            # staging (LocalStack) y prod (AWS)
+  ├── scripts/                     # bootstrap de host/cluster, secretos, backups
+  ├── .github/workflows/           # validación de infra y actualización GitOps de tags
+  ├── docs/final-project.md        # memoria técnica/diseño y evidencias
+  └── Makefile                     # interfaz de operaciones
+
+El archivo .env no se debe compartir ni commitear: contiene configuración sensible. Los secretos Kubernetes se representan en Git solo como SealedSecrets cifrados.
+
+
+4. ENTORNOS Y EJECUCION LOCAL
+
+Docker Compose ofrece un entorno local completo. Incluye PostgreSQL, Redis y ClickHouse; jobs de migración de Prisma y ClickHouse; API, worker y dashboard; y el stack de observabilidad (Prometheus, Alertmanager, Grafana, Loki, Promtail y Tempo), además de exporters/cAdvisor/node-exporter y un webhook sink para comprobar el enrutamiento de alertas.
+
+Flujo local de Project-DevOps:
+
+1) make bootstrap: crea .env desde .env.example si falta, prepara host.docker.internal y clona el fork openpanel como hermano.
+2) make dev-up: ejecuta preflight y docker compose up --build -d; espera a que la API esté sana.
+3) Las migraciones se ejecutan automáticamente mediante los servicios/jobs migrate y migrate-ch.
+4) make dev-down baja el stack (el Makefile dispone de más targets de operación).
+
+Kubernetes se usa con Minikube en local/staging y el diseño objetivo de producción es AWS EKS. El clúster local está diseñado con tres nodos (control-plane y dos workers); se separan cargas de aplicación y observabilidad mediante etiquetas/afinidad. El staging es reproducible y local: no equivale a una cuenta AWS de producción.
+
+
+5. KUBERNETES, KUSTOMIZE Y GITOPS
+
+Los manifiestos se organizan como base + overlays de Kustomize para staging y prod. La base contiene lo común; los overlays modifican recursos, almacenamiento, ingress, valores Helm y configuración de cada entorno.
+
+La aplicación OpenPanel en Kubernetes incluye:
+
+- API gestionada como un recurso Argo Rollout (no Deployment estándar).
+- Servicio activo de API y servicio de preview.
+- Dashboard/start y worker.
+- PostgreSQL, Redis y ClickHouse stateful, con servicios y almacenamiento persistente.
+- Job de migración de Prisma, servicios de monitorización, NetworkPolicies, ConfigMaps, Ingress y Certificate.
+
+Bootstrap GitOps:
+
+1) make minikube-up crea/configura el clúster de tres nodos, almacenamiento local e ingress.
+2) make cluster-up ENV=staging (o prod) instala ArgoCD y el bootstrap App-of-Apps.
+3) ArgoCD pasa a reconciliar continuamente el estado declarado desde Git; tras ese punto no se pretende aplicar manualmente cada componente con kubectl.
+
+El patrón App-of-Apps crea un AppProject y una aplicación bootstrap que administra el conjunto de objetos ArgoCD Application. Las sync waves imponen el orden:
+
+  Wave 0: namespaces y local-path-provisioner.
+  Wave 1: Sealed Secrets, cert-manager y Velero Operator (CRDs/controladores).
+  Wave 2: Prometheus, MinIO y Velero.
+  Wave 3: Loki, Promtail y Tempo.
+  Wave 4: OpenPanel.
+
+Así, la aplicación llega al clúster cuando existen namespaces, almacenamiento, secretos, TLS, copias y observabilidad.
+
+
+6. CI/CD: DEL CAMBIO DE CODIGO AL DESPLIEGUE
+
+El proceso principal es:
+
+  push/PR en openpanel
+    -> validación y build de imágenes
+    -> publicación en GHCR (solo push, no PR)
+    -> evento repository_dispatch al repositorio Project-DevOps
+    -> actualización y commit de los tags de imagen en manifiestos GitOps
+    -> creación de tag release/main-<sha>
+    -> ArgoCD detecta el estado deseado y sincroniza
+    -> Argo Rollouts prepara release blue-green de la API
+    -> validación sobre preview y promoción manual
+
+Pipeline de la aplicación (openpanel/.github/workflows/build-publish.yml):
+
+- Se ejecuta en push a main, tags SemVer, PR contra main y manualmente.
+- Hadolint valida los Dockerfiles de api, worker y start.
+- Construye esas tres imágenes en matriz.
+- Trivy analiza la imagen de API y sube resultados SARIF a GitHub Security. Actualmente es informativo (no bloqueante) y omite vulnerabilidades sin corrección; debe explicarse así, no como un hard gate.
+- Publica imágenes en GHCR fuera de las PRs: main-<sha> para main e imágenes SemVer para tags.
+- Genera SBOM SPDX con Syft como artefacto de evidencia cuando es posible.
+- Tras completar las tres imágenes de main, envía app-image-published al repositorio de infraestructura con el SHA corto. Requiere un PAT limitado para poder hacer ese dispatch.
+
+Pipeline de infraestructura (ci-validate.yml):
+
+- Se ejecuta ante cambios de infraestructura/PR según el workflow.
+- Renderiza Kustomize para bases y overlays relevantes.
+- Valida esquemas con kubeconform.
+- Ejecuta kube-linter para prácticas Kubernetes (límites, tags, root, etc.).
+- Ejecuta gitleaks para detectar secretos expuestos.
+- Dependabot propone actualizaciones de GitHub Actions y Terraform; en el repositorio app además npm/pnpm e imágenes base.
+
+Pipeline de CD de infraestructura (cd-update-tags.yml):
+
+- Se activa por repository_dispatch app-image-published o manualmente con SHA.
+- Serializa ejecuciones para evitar carreras entre despliegues.
+- Actualiza las imágenes de API, start, worker y el job de migración con el tag main-<sha>.
+- Actualiza la Application de OpenPanel para apuntar a release/main-<sha>, un tag inmutable.
+- Hace commit/push a main y crea ese tag release.
+- ArgoCD sincroniza desde el tag de release, lo que hace el despliegue determinista y auditable.
+
+
+7. ENTREGA BLUE-GREEN Y MIGRACIONES
+
+La API usa Argo Rollouts blue-green. La versión existente es blue (activa); la nueva se crea como green y queda expuesta mediante openpanel-api-preview. El tráfico principal sigue en openpanel-api hasta que se valide la versión nueva.
+
+- autoPromotionEnabled está desactivado: la promoción es intencionalmente manual tras smoke tests/comprobaciones.
+- scaleDownDelaySeconds: 600: tras promocionar, la versión previa se conserva caliente durante 10 minutos para facilitar rollback rápido.
+- revisionHistoryLimit: 3: se conservan revisiones anteriores.
+
+Las migraciones Prisma se ejecutan como job antes de arrancar/actualizar la API. El job espera a PostgreSQL y se ordena mediante sync waves/enganches de ArgoCD. La intención es impedir que código nuevo se ejecute contra un esquema aún no migrado.
+
+
+8. OBSERVABILIDAD Y OPERACION
+
+Pilares y herramientas:
+
+- Métricas: Prometheus (kube-prometheus-stack).
+- Alertas: Alertmanager.
+- Dashboards: Grafana, con aprovisionamiento automático de datasources/dashboards.
+- Logs: Promtail recoge logs de contenedores como DaemonSet y los envía a Loki.
+- Trazas: Tempo; Grafana puede enlazar logs con traceID a su traza.
+
+Métricas observadas: tasa de peticiones, errores, P95/P99, event-loop lag de Node, profundidad de cola Redis; conexiones/consultas de PostgreSQL; memoria/cola de Redis; métricas de ClickHouse; CPU/memoria, reinicios, PVCs y presión de nodos del clúster.
+
+Dashboards versionados en grafana-dashboards/: OpenPanel, clúster y logs/trazas. Las alertas definidas incluyen API caída, 5xx elevados, latencia alta, event-loop lag, memoria elevada, PostgreSQL/Redis caídos y salud/entrega de Alertmanager. El canal actual previsto es Slack; PagerDuty se contempla para producción.
+
+
+9. SEGURIDAD, TLS Y BACKUP
+
+Secretos:
+
+- Bitnami Sealed Secrets cifra secrets antes de llegar a Git.
+- El controlador del clúster descifra los SealedSecrets en Secrets nativos.
+- Scripts: ensure-sealing-key.sh (restaurar/generar clave), reseal-secrets.sh (re-sellar) y stabilize-secrets.sh (comprobar creación).
+- La clave de sellado se conserva fuera de Git para poder reconstruir el clúster sin invalidar secretos ya sellados. No incluir ruta exacta, contenido ni credenciales en conversaciones públicas.
+- Evolución prevista para AWS: External Secrets Operator conectado a AWS Secrets Manager.
+
+TLS:
+
+- cert-manager crea y renueva Certificates/Secrets TLS para el Ingress.
+- En staging se usa un ClusterIssuer autofirmado; en producción se prevé sustituir por ACME/Let's Encrypt manteniendo el mismo contrato de issuer.
+
+Backups y recuperación:
+
+- Velero respalda recursos Kubernetes y metadatos/snapshots de volúmenes.
+- MinIO S3-compatible es el backend local/staging; producción apunta a Amazon S3.
+- PostgreSQL se respalda mediante pg_dump; Redis mediante snapshot RDB; ClickHouse mediante su backup nativo. Esto complementa a Velero.
+- Schedules: daily-full-backup en staging y producción; hourly-database-backup en producción.
+- scripts/backup-restore.sh concentra operaciones de backup, listado y restore.
+- Producción prevista usa IRSA para que Velero acceda a AWS sin credenciales cloud estáticas en pods.
+
+
+10. TERRAFORM Y LIMITE DEL ALCANCE AWS
+
+Terraform aprovisiona la infraestructura cloud previa al clúster:
+
+- backup-storage: bucket S3 con versionado, cifrado y bloqueo de acceso público; también soporte para backup de la clave de sellado mediante Secrets Manager.
+- iam-user: usuario/clave IAM para staging en LocalStack.
+- iam-irsa: rol IAM con confianza OIDC para workloads de EKS en producción.
+- environments/staging: LocalStack en localhost:4566 y estado local.
+- environments/prod: AWS y backend S3 con bloqueo DynamoDB.
+
+Importante: el repositorio no pretende aprovisionar toda una producción AWS real. VPC multi-AZ, subredes, EKS, ALB, RDS y ElastiCache son parte del diseño objetivo documentado, no necesariamente recursos Terraform ya desplegados. Distinguir siempre entre lo implementado/localmente verificable y la arquitectura objetivo de producción.
+
+
+11. COMO USAR ESTE CONTEXTO EN LA CONVERSACION
+
+Puedes tratar este sistema como una plataforma DevOps end-to-end y GitOps para OpenPanel. Para cualquier análisis o propuesta, conserva estas restricciones y decisiones:
+
+- No mezclar responsabilidades: el código/contenedores residen en openpanel; el estado desplegable e infraestructura en Project-DevOps.
+- Git es la fuente de verdad; ArgoCD reconcilia en lugar de aplicar cambios manuales persistentes al clúster.
+- El cambio de imagen viaja por evento de la app a infra, commit de tags y release tag inmutable; no hay despliegue directo desde CI al clúster.
+- La API requiere promoción manual blue-green tras validar el preview.
+- SealedSecrets sí pueden estar en Git; secretos planos, .env, PATs, claves de AWS y claves privadas no.
+- Staging/Minikube/LocalStack es una implementación local reproducible; EKS/AWS es el objetivo de producción parcialmente diseñado, no una afirmación de que toda esa cloud esté levantada.
+- Antes de recomendar cambios, hay que indicar si afectan a la aplicación, manifiestos Kustomize, charts/valores Helm, Terraform, pipelines o procedimientos operativos.
+
+FIN DEL CONTEXTO

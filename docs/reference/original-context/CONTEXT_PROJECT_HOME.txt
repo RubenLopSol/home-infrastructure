@@ -1,0 +1,1560 @@
+HOME INFRASTRUCTURE — PROJECT CONTEXT
+
+Document: CONTEXT_PROJECT_HOME.txt Project: home-infrastructure Purpose:
+Production-grade DevOps / Platform Engineering homelab Status:
+Architecture and planning phase Version: 0.2.0
+
+=============================================================================== 1.
+PROJECT PURPOSE
+===============================================================================
+
+This project is a serious personal DevOps/Platform Engineering
+laboratory built around the real home environment.
+
+The objective is NOT simply to make a home server work.
+
+The objective is to design, implement, operate, monitor, secure,
+version, upgrade, break, recover and document a small production-grade
+platform using real engineering practices.
+
+The physical infrastructure is homelab-sized, but the engineering
+processes should intentionally resemble those used in professional
+companies.
+
+Core principle:
+
+    "Production-grade practices, adapted to homelab scale."
+
+Do not simplify professional engineering practices merely because this
+is a home environment. Simplify only where additional complexity does
+not provide meaningful reliability, security, operational or learning
+value.
+
+This project is also a long-term practical training environment for a
+junior DevOps engineer. The architecture should therefore deliberately
+expose the owner to real concepts such as:
+
+-   Git and release management
+-   Infrastructure as Code
+-   Configuration management
+-   CI/CD
+-   GitOps
+-   Kubernetes
+-   progressive delivery
+-   Blue/Green deployments
+-   observability
+-   SLI/SLO concepts
+-   security engineering
+-   secrets management
+-   network segmentation
+-   VPNs
+-   backup and disaster recovery
+-   incident management
+-   failure testing
+-   change management
+-   dependency/version management
+-   automation
+-   operational documentation
+
+===============================================================================
+2. DESIGN PHILOSOPHY
+===============================================================================
+
+The project must be:
+
+1.  Versioned
+2.  Reproducible
+3.  Automated
+4.  Observable
+5.  Secure
+6.  Redundant where justified
+7.  Recoverable
+8.  Testable
+9.  Documented
+10. Maintainable
+11. Simple enough to operate correctly
+12. Designed before implementation
+
+For every stateful service, the required outcome is not merely that its
+container starts. It must retain its state across a pod/container restart,
+host reboot, upgrade and, after a tested restore, total host loss.
+
+Avoid:
+
+-   manual configuration that should be code
+-   hidden state
+-   undocumented infrastructure
+-   unpinned production dependencies
+-   secrets in Git
+-   unnecessary public exposure
+-   Kubernetes being responsible for critical network routing
+-   unnecessary abstractions
+-   introducing technology only because it is fashionable
+-   overengineering without a measurable benefit
+
+Important principle:
+
+    Inspect -> Design -> Review -> Implement -> Test -> Document
+
+Never blindly change critical infrastructure.
+
+===============================================================================
+3. REFERENCE PROJECT / PREVIOUS WORK
+===============================================================================
+
+The new project should evolve from the owner’s previous DevOps project
+rather than ignoring previous experience.
+
+Previous project:
+
+    Project-DevOps (GitOps) for OpenPanel
+
+It included:
+
+-   Docker Compose for local development/testing
+-   Terraform
+-   Minikube
+-   EKS design
+-   Argo CD
+-   Argo Rollouts
+-   Blue/Green delivery
+-   Kustomize
+-   Prometheus
+-   Alertmanager
+-   Grafana
+-   Loki
+-   Promtail
+-   Tempo
+-   Velero
+-   MinIO
+-   Sealed Secrets
+-   cert-manager
+-   Gitleaks
+-   kube-linter
+-   GitHub Actions
+-   Dependabot
+-   backup/restore scripts
+-   infrastructure/application separation
+-   immutable release tags
+-   GitOps image tag updates
+
+Important patterns to preserve and evolve:
+
+-   clear repository organization
+-   infrastructure/application separation where useful
+-   GitHub Actions validation
+-   dependency automation
+-   lock files
+-   Terraform environments/modules
+-   Kubernetes base/overlay concepts when appropriate
+-   Argo CD GitOps
+-   Argo Rollouts for Blue/Green
+-   security scanning
+-   observability
+-   backup/restore
+-   documentation and architecture diagrams
+-   automation scripts
+-   reproducible deployments
+
+The new project should be a more mature evolution of this approach,
+adapted to a real home infrastructure platform.
+
+===============================================================================
+4. HIGH-LEVEL TARGET ARCHITECTURE
+===============================================================================
+
+Conceptual target:
+
+                            INTERNET
+                               |
+                           ISP / ONT
+                               |
+                       ROUTER / FIREWALL
+                               |
+                +--------------+--------------+
+                |              |              |
+              HOME          SERVERS          IOT
+                |              |              |
+             Wi-Fi APs      Ubuntu/K8s      Devices
+                |              |              |
+        phones/laptops/TVs    services       cameras
+        Fire TV/etc.          monitoring     plugs
+                             automation      sensors
+                             storage         lights
+                             VPN/DNS
+
+Kubernetes is the application platform.
+
+The network/firewall/routing plane must remain independent from
+Kubernetes for critical connectivity.
+
+GitHub is the source of truth.
+
+GitHub Actions is CI.
+
+Argo CD is Kubernetes CD/GitOps.
+
+Argo Rollouts provides progressive delivery where appropriate.
+
+===============================================================================
+4.1 INITIAL HARDWARE DEPLOYMENT MODEL
+===============================================================================
+
+This is the approved target direction for Phase 0 planning, not a statement
+that the hardware has been purchased or deployed. The owner currently has no
+dedicated homelab hardware; the work computer must not become a permanently
+required home-infrastructure host.
+
+The platform separates three failure and security domains:
+
+    router/firewall  !=  application server  !=  backup/storage system
+
+1. Dedicated router/firewall: terminates the Internet connection and owns
+   routing, DHCP, VLANs, firewall policy and private WireGuard access. It
+   must remain independent of Kubernetes. Target class: a dedicated x86-64
+   appliance with sufficient ports for WAN/LAN expansion, reliable NICs,
+   approximately 8 GB RAM and SSD storage; exact model depends on ISP,
+   fibre/voice requirements and measured bandwidth.
+
+2. Dedicated application server: a wired x86-64 business SFF workstation or
+   similarly expandable host, running Ubuntu and the initial single-node
+   Kubernetes platform. Planning baseline: 32 GB RAM and 1 TB NVMe SSD, with
+   capacity to expand. It hosts GitOps, observability, Home Assistant, MQTT
+   and approved future workloads. A single node is not HA; backups and tested
+   recovery are mandatory until redundancy is deliberately introduced.
+
+3. Dedicated NAS/backup system: primarily stores backups, shared files and
+   future media. Planning baseline: two bays with two equal CMR disks in a
+   mirror. It is not the initial Kubernetes application server. Mirroring
+   protects against a disk failure but does not replace local and off-site
+   backups.
+
+4. Managed network switch: supports IEEE 802.1Q VLANs, with enough ports for
+   firewall, server, NAS and wired APs. PoE is required only if chosen APs or
+   cameras need it.
+
+5. UPS: protects the router/firewall, switch, server and NAS from short power
+   loss and enables orderly shutdown where supported.
+
+Initial storage rule: live stateful workloads use deliberate persistent
+storage on the application server; the NAS receives automated backups. This
+avoids making a NAS outage an immediate outage of every application. Future
+storage/HA changes require a separately reviewed design.
+
+Recommended acquisition order:
+
+    1. Confirm ISP/ONT/router constraints and choose router/firewall
+    2. Managed switch
+    3. Application server
+    4. NAS and CMR disks
+    5. UPS
+    6. Wired APs and later IoT/camera hardware
+
+Do not buy camera accelerators, large recording storage, multiple Kubernetes
+nodes or advanced HA components until workload, camera retention, budget,
+noise, power and Ethernet availability have been inventoried.
+
+===============================================================================
+5. CURRENT PHYSICAL NETWORK
+===============================================================================
+
+Current ISP/physical topology:
+
+-   Nokia G-010G-P appears to be the ONT.
+-   Main router/gateway: Sagemcom F@ST 5657.
+-   Two ZTE ZXHN H3601 V9.1 devices.
+-   Both ZTE devices currently operate in Repeater mode.
+-   SSID: MIWIFI_fMP7.
+-   LAN: 192.168.1.0/24.
+-   Gateway: 192.168.1.1.
+-   No evidence of a second NAT/subnet.
+-   Both ZTEs currently use the same LAN.
+-   Wired Ethernet backhaul availability must be verified.
+
+Observed ZTEs:
+
+ZTE A: - IP: 192.168.1.128 - Base MAC: 04:20:84:36:D1:BF - 2.4 GHz
+BSSID: 04:20:84:36:D1:BF - 2.4 GHz channel: 6 - 5 GHz BSSID:
+04:20:84:36:D1:C0 - 5 GHz channel: 64
+
+ZTE B: - IP: 192.168.1.129 - Base MAC: 04:20:84:36:CC:BB - 2.4 GHz
+BSSID: 04:20:84:36:CC:BB - 2.4 GHz channel: 11 - 5 GHz BSSID:
+04:20:84:36:CC:BC - 5 GHz channel: 64
+
+Sagemcom: - Gateway: 192.168.1.1 - Observed gateway MAC:
+08:7B:12:DC:24:07 - Observed 2.4 GHz BSSID: 08:7B:12:DC:24:04 - Channel:
+12
+
+Ubuntu: - Wi-Fi interface: wlo1 - IP: 192.168.1.172/24 - MAC:
+24:ee:9a:8b:e0:a7 - Gateway: 192.168.1.1 - Observed connection to ZTE B
+5 GHz BSSID: 04:20:84:36:CC:BC - Signal approximately -40/-41 dBm during
+testing. - Observed link rate around 866.7 Mbit/s under favorable
+conditions.
+
+Other observed devices: - Samsung mobile: 192.168.1.137 - Fire TV:
+192.168.1.133 - Additional clients observed: 192.168.1.134, .138, etc.
+
+Do not assume exact physical mapping of ZTE .128/.129 without
+verification.
+
+===============================================================================
+6. CURRENT NETWORK DIAGNOSTICS
+===============================================================================
+
+Connectivity tested successfully:
+
+-   Ubuntu -> gateway ping: 0% loss
+-   Ubuntu -> ZTE .128 ping: 0% loss
+-   ARP to gateway: successful
+-   nmap host discovery found expected infrastructure/devices
+-   ZTE management ports 80/443 reachable
+
+Example measured results: - 50 pings to 192.168.1.128: 0% loss, ~3.96 ms
+average - 50 pings to 192.168.1.1: 0% loss, ~6.74 ms average
+
+These results prove basic IP connectivity at test time.
+
+They do NOT prove correct operation of: - multicast - broadcast - mDNS -
+SSDP - Miracast - Wi-Fi Direct - discovery protocols - casting - other
+L2-sensitive traffic
+
+Never conclude that a repeater/network is fully healthy just because
+ping works.
+
+===============================================================================
+7. CURRENT SMART VIEW / CASTING PROBLEM
+===============================================================================
+
+Samsung Smart View mirroring to an old LG TV or Amazon Fire TV is
+unstable after several minutes.
+
+The same phone and equipment worked correctly in a previous apartment.
+
+In the current house, disabling the two repeaters often makes mirroring
+work correctly while the main router remains operational.
+
+Current working hypothesis:
+
+    Repeater topology / wireless backhaul may be interfering with
+    multicast/discovery/bridging behavior required by Smart View/Miracast or
+    casting.
+
+This is a hypothesis, not a proven root cause.
+
+Important distinction:
+
+Streaming: Internet/server -> mobile
+
+Mirroring: mobile -> local TV/Fire TV
+
+Server saturation should not normally directly terminate local
+mirroring, although traffic/load may be a trigger.
+
+Long-term preferred network architecture:
+
+-   one stable LAN
+-   properly managed APs
+-   preferably Ethernet backhaul
+-   controlled multicast/discovery behavior
+-   VLAN-aware design where required
+-   no unnecessary wireless repeater chains
+
+When implementing VLANs, explicitly account for mDNS/SSDP/casting/Home
+Assistant/IoT discovery requirements.
+
+===============================================================================
+8. TARGET NETWORK ARCHITECTURE
+===============================================================================
+
+Proposed future VLANs:
+
+VLAN 10 - HOME 192.168.10.0/24
+
+VLAN 20 - SERVERS 192.168.20.0/24
+
+VLAN 30 - IOT 192.168.30.0/24
+
+VLAN 40 - GUEST 192.168.40.0/24
+
+VLAN 50 - VPN 192.168.50.0/24
+
+These are design proposals, not yet implemented.
+
+Firewall philosophy:
+
+HOME -> SERVERS Allow required services.
+
+HOME -> IOT Controlled / explicit where possible.
+
+IOT -> HOME Deny by default.
+
+IOT -> SERVERS Deny by default; explicit exceptions.
+
+GUEST -> HOME Deny.
+
+GUEST -> SERVERS Deny.
+
+VPN -> internal networks Policy based on peer/user role.
+
+Internet -> management Deny by default.
+
+Internet -> cameras Deny by default.
+
+The exact VLAN/routing implementation depends on the capabilities of the
+current router/firewall and may require future replacement or addition
+of a dedicated firewall/router.
+
+===============================================================================
+9. VPN ARCHITECTURE
+===============================================================================
+
+There are two completely separate VPN use cases.
+
+9.1 PRIVATE REMOTE ACCESS - WIREGUARD
+
+Purpose:
+
+Securely access home resources from outside the house.
+
+Potential resources:
+
+-   security cameras
+-   smart plugs
+-   heating/thermostats
+-   exterior lighting
+-   Home Assistant
+-   Ubuntu
+-   Kubernetes services
+-   Grafana
+-   storage
+-   media
+-   files
+-   other home services
+
+Preferred architecture:
+
+    Internet
+       |
+    WireGuard
+       |
+    Firewall
+       |
+    HOME / SERVERS / IOT
+
+Each trusted device should have its own cryptographic identity/key.
+
+Do not use one shared VPN credential for everyone.
+
+Prefer per-peer access control.
+
+Example:
+
+Owner: HOME + SERVERS + selected IOT
+
+Family member: only explicitly required resources
+
+Do not expose SSH, Grafana, cameras, Kubernetes, Home Assistant or other
+management services directly to the Internet unless there is a
+documented, deliberate reason.
+
+9.2 OUTBOUND INTERNET VPN - EXPRESSVPN
+
+Purpose:
+
+Allow selected physical devices to route Internet traffic through
+ExpressVPN.
+
+This is NOT the same as WireGuard remote access.
+
+Desired behavior:
+
+    Selected device
+        |
+    policy routing
+        |
+    ExpressVPN
+        |
+    Internet
+
+Other devices:
+
+    device
+       |
+    normal Internet
+
+Local LAN traffic should remain local and should not unnecessarily
+traverse the outbound VPN.
+
+Possible implementations: - router/firewall VPN client with policy
+routing - dedicated Linux gateway - other deliberately designed routing
+solution
+
+Do not assume the current Sagemcom supports ExpressVPN client mode until
+verified.
+
+Do not make Kubernetes the critical home router unless there is a strong
+architectural reason.
+
+===============================================================================
+10. DNS / NETWORK SECURITY
+===============================================================================
+
+Preferred network-wide DNS filtering platform:
+
+    AdGuard Home
+
+Goals:
+
+-   block advertisements
+-   block trackers
+-   block known malicious/phishing domains where appropriate
+-   provide local DNS
+-   support internal hostnames where useful
+-   integrate with VPN access
+
+Potential remote architecture:
+
+    Mobile
+      |
+    WireGuard
+      |
+    Home DNS
+      |
+    AdGuard Home
+      |
+    Internet
+
+Important: DNS filtering cannot block every advertisement, especially
+ads served from the same domains as legitimate content.
+
+DNS must not become a single catastrophic dependency without a recovery
+or fallback plan.
+
+Potential repository location:
+
+    kubernetes/networking/dns/adguard/
+
+===============================================================================
+11. KUBERNETES ROLE
+===============================================================================
+
+Kubernetes is the application/service platform.
+
+It should host: - monitoring - dashboards - DNS where appropriate - Home
+Assistant - MQTT - applications - media services - supporting
+infrastructure - other suitable services
+
+Kubernetes should NOT automatically become: - the only router - the only
+firewall - the only DHCP service - the only mechanism keeping the home
+network alive
+
+Critical network-plane functions should remain available even if
+Kubernetes is completely unavailable.
+
+Kubernetes should be designed for: - replicas - health probes - resource
+requests/limits - security contexts - PodDisruptionBudgets where
+appropriate - topology spread / anti-affinity where useful -
+NetworkPolicies - controlled upgrades - failure recovery - observability
+
+===============================================================================
+12. GITOPS / CI/CD
+===============================================================================
+
+GitHub: Source of truth.
+
+GitHub Actions: CI / validation / security / build / automation.
+
+Argo CD: Kubernetes CD and reconciliation.
+
+Argo Rollouts: Progressive delivery / Blue-Green / Canary where
+appropriate.
+
+Normal deployment flow:
+
+    Developer
+       |
+    Git branch
+       |
+    Pull Request
+       |
+    GitHub Actions
+       |
+    tests / lint / security / validation
+       |
+    review
+       |
+    merge
+       |
+    main
+       |
+    Argo CD
+       |
+    Kubernetes
+
+Avoid normal production deployments through direct: kubectl apply
+
+Manual kubectl usage is acceptable for: - investigation - diagnostics -
+controlled break/failure exercises - emergency operations -
+troubleshooting
+
+but not as the normal deployment mechanism.
+
+===============================================================================
+13. BLUE/GREEN AND PROGRESSIVE DELIVERY
+===============================================================================
+
+Blue/Green deployment is a deliberate project requirement.
+
+Preferred tooling:
+
+    Argo CD + Argo Rollouts
+
+Concept:
+
+    BLUE = current stable version
+    GREEN = candidate version
+
+Deployment:
+
+    deploy GREEN
+        |
+    readiness / health checks
+        |
+    optional analysis
+        |
+    validation
+        |
+    promote
+        |
+    GREEN becomes active
+        |
+    BLUE retained according to policy
+        |
+    rollback if necessary
+
+Practice: - manual promotion - automated promotion where safe -
+automated rollback - analysis runs - metrics-based validation - smoke
+tests - deployment history - immutable application versions
+
+Do not force Blue/Green onto every service merely to say it exists. Use
+the strategy where it provides operational or learning value.
+
+===============================================================================
+14. REDUNDANCY / HIGH AVAILABILITY
+===============================================================================
+
+The final architecture should be intentionally redundant where
+justified.
+
+Target principles:
+
+-   avoid unnecessary single points of failure
+-   use multiple replicas for appropriate stateless workloads
+-   use pod anti-affinity/topology spread where meaningful
+-   design DNS for availability
+-   design monitoring for availability
+-   maintain storage resilience and backups
+-   make remote access recoverable
+-   make infrastructure reproducible
+
+Important:
+
+    Redundancy != backup
+
+    3 replicas + no backup is not a disaster recovery strategy.
+
+The project should distinguish:
+
+-   high availability
+-   replication
+-   redundancy
+-   backup
+-   restore
+-   disaster recovery
+
+For Kubernetes, eventually practice: - pod failure - node failure -
+deployment failure - rescheduling - rolling updates - controlled node
+drain
+
+If hardware allows a multi-node cluster, the design should support it.
+If physical hardware is initially limited, the architecture and
+manifests should still follow production principles where practical
+without pretending single-node infrastructure is truly HA.
+
+===============================================================================
+15. VERSIONING AND DEPENDENCY MANAGEMENT
+===============================================================================
+
+Versioning is a day-zero requirement.
+
+The project must version not only source code but also the platform
+itself.
+
+Things that can affect reproducibility must be: - versioned - pinned -
+locked - or otherwise deterministically resolved
+
+This includes:
+
+-   project releases
+-   Git commits/tags
+-   Terraform
+-   Terraform providers
+-   Ansible
+-   Kubernetes
+-   kubectl
+-   Helm
+-   CNI
+-   CSI
+-   Argo CD
+-   Argo Rollouts
+-   Helm charts
+-   container images
+-   GitHub Actions
+-   application dependencies
+-   OS/runtime versions where relevant
+-   configuration schemas
+
+Do not scatter arbitrary versions throughout the repository.
+
+Use a clear version-management strategy.
+
+A central platform version inventory may be used for visibility, for
+example:
+
+    versions.yaml
+
+However, individual tools should also use their native version/lock
+mechanism where appropriate.
+
+Examples:
+
+Terraform: required_version required_providers terraform.lock.hcl
+
+GitHub Actions: pin versions deliberately; use dependency automation.
+
+Helm: explicit chart versions.
+
+Containers: explicit tags and preferably digests for critical immutable
+workloads.
+
+Kubernetes: explicit cluster version and component versions.
+
+The goal is to be able to answer:
+
+    "What exact platform version was running at commit X?"
+
+and ideally reconstruct it.
+
+===============================================================================
+16. PROJECT VERSIONING
+===============================================================================
+
+Use Semantic Versioning for the project/release lifecycle where
+appropriate:
+
+    MAJOR.MINOR.PATCH
+
+Examples:
+
+    v0.1.0
+    v0.2.0
+    v1.0.0
+
+MAJOR: incompatible architectural or operational changes
+
+MINOR: compatible new functionality
+
+PATCH: fixes, safe configuration changes, documentation/security
+corrections where appropriate
+
+The project must begin versioning from the first meaningful baseline.
+
+Release notes should summarize: - infrastructure changes - tool
+upgrades - application upgrades - security changes - breaking changes -
+migrations - recovery/rollback considerations
+
+===============================================================================
+17. DEPENDENCY UPDATES
+===============================================================================
+
+Dependency management should be automated.
+
+Potential tooling: - Dependabot - Renovate
+
+The exact tool can be selected during Phase 0.
+
+Expected behavior:
+
+    Dependency update
+          |
+        PR
+          |
+        CI
+          |
+    tests / security
+          |
+       review
+          |
+        merge
+          |
+       deploy
+
+Do NOT blindly auto-upgrade everything.
+
+Suggested policy:
+
+Patch/security: automated PR, potentially auto-merge only when proven
+safe.
+
+Minor: PR + review.
+
+Major: planned upgrade + compatibility analysis + testing.
+
+Critical platform components such as Kubernetes, CNI, CSI, Argo CD,
+storage and networking should receive explicit upgrade planning.
+
+===============================================================================
+18. INFRASTRUCTURE AS CODE
+===============================================================================
+
+Use the right tool for the right layer.
+
+Terraform: - resources exposed through suitable providers/APIs -
+infrastructure provisioning - infrastructure state
+
+Ansible: - Ubuntu host configuration - hardening - packages - system
+services - host-level configuration
+
+Kubernetes: - workloads and cluster services
+
+Argo CD: - deployment/reconciliation
+
+Do not force Terraform to manage things it is poorly suited to manage.
+
+Do not use Kubernetes for responsibilities that belong to the network
+plane.
+
+===============================================================================
+19. TARGET REPOSITORY STRUCTURE
+===============================================================================
+
+Initial intended structure:
+
+home-infrastructure/ | +– .github/ | +– workflows/ | +– ci.yaml | +–
+security.yaml | +– infrastructure/ | +– terraform/ | | +– modules/ | |
++– environments/ | | +– home/ | | | +– ansible/ | +– inventory/ | +–
+playbooks/ | +– roles/ | +– kubernetes/ | +– argocd/ | | +–
+applications/ | | +– projects/ | | | +– namespaces/ | | | +– networking/
+| | +– dns/ | | +– vpn/ | | +– ingress/ | | | +– security/ | | +–
+cert-manager/ | | +– external-secrets/ | | +– policies/ | | | +–
+monitoring/ | | +– prometheus/ | | +– grafana/ | | +– loki/ | | +–
+alertmanager/ | | | +– home/ | | +– home-assistant/ | | +– mqtt/ | | +–
+automation/ | | | +– applications/ | +– jellyfin/ | +– syncthing/ | +– …
+| +– scripts/ | +– docs/ | +– architecture/ | | +– network.md | | +–
+kubernetes.md | | +– security.md | | | +– decisions/ | | | +– runbooks/
+| | | +– disaster-recovery/ | | | +– operations/ | | | +– diagrams/ | +–
+.gitignore +– README.md +– LICENSE +– CONTEXT_PROJECT_HOME.txt +–
+ROADMAP.md +– ARCHITECTURE.md +– DECISIONS.md
+
+The exact structure may evolve after the repository is inspected and the
+Master Plan is approved. Avoid creating folders without a clear
+responsibility.
+
+===============================================================================
+20. DOCUMENTATION / ADRs
+===============================================================================
+
+Important architectural decisions should be documented as ADRs.
+
+Example:
+
+    docs/decisions/
+    +-- 0001-kubernetes.md
+    +-- 0002-gitops.md
+    +-- 0003-argocd.md
+    +-- 0004-network-segmentation.md
+    +-- 0005-wireguard.md
+    +-- 0006-storage.md
+
+Each ADR should describe: - context - problem - decision -
+alternatives - reasons - consequences - migration/rollback implications
+where relevant
+
+Documentation is part of the infrastructure, not an afterthought.
+
+===============================================================================
+21. OBSERVABILITY
+===============================================================================
+
+Target stack:
+
+-   Prometheus
+-   Grafana
+-   Loki
+-   Alertmanager
+-   exporters
+-   tracing if justified
+
+Previous project experience already included: - Prometheus -
+Alertmanager - Grafana - Loki - Promtail - Tempo
+
+The new project should evolve that experience.
+
+Monitor:
+
+Infrastructure: - CPU - RAM - disk - filesystem - disk health -
+temperature - uptime - host health
+
+Network: - Internet reachability - gateway reachability - latency -
+packet loss - bandwidth - interfaces - DNS - VPN state - AP/Wi-Fi health
+where measurable - device availability
+
+Kubernetes: - node health - pod health - restarts - CPU/memory -
+storage - deployments - API health - controller health
+
+Security: - failed SSH attempts - firewall events - authentication
+failures - unexpected devices - vulnerability findings - suspicious
+connections where detectable
+
+Home: - IoT availability - cameras - sensors - temperature - humidity -
+power - battery - automation failures
+
+Potential alerts: - Internet down - gateway unreachable - DNS failure -
+VPN down - Kubernetes node down - disk capacity high - disk health
+issue - container/pod restart loops - camera offline - IoT device
+offline - repeated authentication failures - unknown device detected
+
+===============================================================================
+22. SLI / SLO / SRE PRACTICE
+===============================================================================
+
+Where meaningful, define service-level objectives.
+
+Examples only; exact targets must be decided per service:
+
+-   DNS availability
+-   VPN availability
+-   Home Assistant availability
+-   application availability
+-   latency
+-   packet loss
+
+The project should eventually practice:
+
+-   SLI
+-   SLO
+-   error budget
+-   alerting based on user impact rather than only resource metrics
+
+Do not create meaningless SLOs for every component.
+
+===============================================================================
+23. SECURITY BASELINE
+===============================================================================
+
+Security is first-class.
+
+Required principles:
+
+-   least privilege
+-   default deny where appropriate
+-   network segmentation
+-   RBAC
+-   NetworkPolicies
+-   secure SSH
+-   individual accounts
+-   SSH keys
+-   no direct root SSH login
+-   MFA/passkeys where supported
+-   secrets never committed in plaintext
+-   image/code vulnerability scanning
+-   dependency scanning
+-   OS patching
+-   Kubernetes security contexts
+-   controlled public exposure
+-   TLS
+-   auditability
+-   backups
+-   disaster recovery
+
+Potential secret technologies: - SOPS + age - External Secrets - Sealed
+Secrets - another appropriate solution
+
+The final choice should be based on operational simplicity and learning
+value.
+
+Never expose: - cameras - SSH - Kubernetes API - Grafana - Home
+Assistant - management interfaces
+
+to the public Internet without a documented reason.
+
+===============================================================================
+24. STORAGE / BACKUPS / DISASTER RECOVERY
+===============================================================================
+
+Storage categories may include:
+
+-   application data
+-   media
+-   camera recordings
+-   backups
+-   configuration
+-   GitOps state
+
+Backup architecture must distinguish:
+
+    replication
+    backup
+    snapshot
+    restore
+    disaster recovery
+
+Backup policy should define: - what is backed up - frequency -
+retention - encryption where appropriate - local copy - off-site copy
+where possible - restore testing
+
+A backup that has never been restored is not considered fully validated.
+
+Target recovery exercise:
+
+    Fresh Ubuntu
+        |
+    host bootstrap
+        |
+    infrastructure provisioning
+        |
+    Kubernetes
+        |
+    Argo CD
+        |
+    applications
+        |
+    restore data
+        |
+    verification
+
+The long-term goal is to rebuild the platform from Git plus required
+external data/secrets/backups.
+
+===============================================================================
+24.1 STATE OWNERSHIP, PERSISTENCE AND FULL RECOVERY
+===============================================================================
+
+GitOps describes the desired platform state; it is not a substitute for
+application data. Every deployed component must classify its state and have
+an explicit owner and recovery path:
+
+1. Declarative configuration: Argo CD Applications, Helm chart versions,
+   Helm values, Kustomize overlays, dashboards, alerts, policies, and
+   infrastructure configuration. These belong in Git and must be versioned.
+
+2. Secrets and cryptographic identity: API tokens, passwords, TLS material,
+   WireGuard peer keys, MQTT credentials and encryption keys. These must
+   never be stored in plaintext in Git. They require encrypted secret
+   management and a separately protected recovery copy of the decryption
+   material.
+
+3. Persistent application state: databases, application configuration,
+   paired device state, automations, integrations and recordings. This must
+   be stored on durable storage outside a container filesystem (for example
+   Kubernetes PVCs backed by a deliberate storage solution) and backed up.
+
+4. External network-device configuration: router, firewall, switch and AP
+   configuration. This is outside Kubernetes and must have a documented,
+   secure export/backup and restore procedure where the device supports it.
+
+Container filesystems and Kubernetes ephemeral volumes must never be the
+only location for data that is needed after restart or recovery. A chart
+deployment must explicitly enable and configure persistence before the
+service is accepted.
+
+Home-critical services require service-specific recovery guarantees:
+
+- Home Assistant: configuration, database, integrations, automations,
+  dashboards and paired-device state must be recoverable without re-adding
+  devices wherever the integration permits it.
+- MQTT: configuration, users, ACLs, certificates and required persistence
+  must be recoverable.
+- AdGuard Home/DNS: configuration, filters, local records, rewrites and
+  client policy must be recoverable.
+- Cameras/NVR: configuration, credentials, retention policy and metadata
+  must be recoverable; recording retention and backup scope are an explicit
+  capacity decision.
+- Zigbee/Z-Wave/Thread: coordinator and network backup material must be
+  identified, protected and restore-tested before relying on the network.
+
+The recovery target for a total host failure is:
+
+    replacement host
+       -> automated host/bootstrap configuration
+       -> Kubernetes and Argo CD
+       -> GitOps redeploy
+       -> restore persistent data and secrets
+       -> functional verification of home services
+
+The desired result is a functioning home, not an empty set of freshly
+started containers. Backups are not valid until their restore procedure has
+been exercised and documented.
+
+===============================================================================
+25. HOME AUTOMATION
+===============================================================================
+
+Central platform:
+
+    Home Assistant
+
+Potential ecosystem:
+
+-   MQTT
+-   smart lights
+-   smart plugs
+-   heating
+-   thermostats
+-   exterior lighting
+-   cameras
+-   doors/windows
+-   blinds
+-   presence
+-   energy monitoring
+-   sensors
+-   media
+-   notifications
+-   automation
+
+Potential architecture:
+
+    Devices
+       |
+      MQTT / integrations
+       |
+    Home Assistant
+       |
+    automation
+       |
+    action / notification
+
+Security automation examples: - away mode - presence-based lighting -
+heating control - door/window monitoring - camera motion notifications -
+energy monitoring - device availability alerts
+
+===============================================================================
+26. CAMERAS / SECURITY
+===============================================================================
+
+Preferred security architecture:
+
+    IOT / SECURITY VLAN
+            |
+          Cameras
+            |
+            v
+      NVR / Storage
+            |
+        local storage
+
+Cameras should not have unrestricted access to HOME or SERVERS.
+
+Remote camera access should normally be:
+
+    Remote device
+        |
+    WireGuard
+        |
+    Firewall
+        |
+    Camera/NVR
+
+Do not expose camera management interfaces directly to the Internet.
+
+Camera recordings must have an explicit storage and retention policy.
+
+===============================================================================
+27. PERSONAL SERVICES
+===============================================================================
+
+Potential services include:
+
+-   Syncthing
+-   Samba/SMB
+-   SFTP/SSH
+-   Jellyfin
+-   Home Assistant
+-   MQTT
+-   AdGuard Home
+-   Grafana
+-   personal dashboards
+-   backup services
+-   URL/file sharing
+-   other services added over time
+
+Each service should be evaluated for: - security - persistence -
+backups - monitoring - failure behavior - resource requirements -
+whether Kubernetes is appropriate
+
+===============================================================================
+28. FAILURE ENGINEERING
+===============================================================================
+
+The project must deliberately practice failure scenarios.
+
+Examples:
+
+-   pod failure
+-   node failure
+-   bad deployment
+-   failed DNS
+-   failed VPN
+-   full disk
+-   storage failure
+-   certificate problem
+-   resource exhaustion
+-   network outage
+-   unavailable IoT device
+-   unavailable camera
+-   failed backup
+-   failed restore
+
+Expected lifecycle:
+
+    Detection
+       |
+    Alert
+       |
+    Diagnosis
+       |
+    Mitigation
+       |
+    Recovery
+       |
+    Verification
+       |
+    Postmortem
+       |
+    Improvement
+
+Do not merely prove that systems work.
+
+Prove that they recover.
+
+===============================================================================
+29. INCIDENT MANAGEMENT
+===============================================================================
+
+The project should eventually include simple incident-management
+practice.
+
+For significant failures document:
+
+-   incident summary
+-   impact
+-   timeline
+-   detection
+-   root cause
+-   contributing factors
+-   mitigation
+-   recovery
+-   corrective actions
+-   prevention
+
+Use runbooks for known incidents.
+
+Example:
+
+    docs/runbooks/dns-down.md
+    docs/runbooks/kubernetes-node-failure.md
+    docs/runbooks/vpn-down.md
+    docs/runbooks/bad-deployment.md
+    docs/runbooks/disk-full.md
+
+===============================================================================
+30. CHANGE MANAGEMENT
+===============================================================================
+
+Infrastructure changes should follow a controlled process:
+
+    Proposal
+       |
+    Branch
+       |
+    Change
+       |
+    CI
+       |
+    Review
+       |
+    Merge
+       |
+    Deployment
+       |
+    Verification
+       |
+    Documentation
+
+For high-risk changes:
+
+-   backup
+-   rollback plan
+-   maintenance window if appropriate
+-   validation
+-   post-change monitoring
+
+Critical network changes must never be performed blindly.
+
+===============================================================================
+31. CODEX / AI OPERATING RULES
+===============================================================================
+
+Codex is expected to assist with the project.
+
+Rules:
+
+1.  Inspect first, change second.
+2.  Read CONTEXT_PROJECT_HOME.txt before making architectural changes.
+3.  Prefer read-only inspection before modifications.
+4.  Compare actual state with documented state.
+5.  Identify unknowns rather than guessing.
+6.  Explain risky changes before applying them.
+7.  Request explicit approval before disruptive operations.
+8.  Never blindly modify:
+    -   default gateway
+    -   DHCP
+    -   DNS
+    -   firewall
+    -   network interfaces
+    -   Wi-Fi
+    -   critical services
+    -   Kubernetes resources
+    -   Terraform infrastructure
+    -   persistent volumes
+    -   credentials
+    -   boot/network configuration
+9.  Never store secrets in Git.
+10. Never assume multicast/discovery works because ping works.
+11. Never assume device identity without verification.
+12. Never expose management services publicly without deliberate
+    approval.
+13. Keep critical network routing independent of Kubernetes.
+14. Avoid unnecessary complexity.
+15. Follow the repository’s versioning and GitOps strategy.
+16. Validate changes before deployment.
+17. Document important changes.
+
+Preferred Codex workflow:
+
+    inspect
+      ->
+    understand
+      ->
+    propose
+      ->
+    review
+      ->
+    implement
+      ->
+    test
+      ->
+    document
+
+===============================================================================
+32. MASTER IMPLEMENTATION ROADMAP
+===============================================================================
+
+The project must be designed globally before implementation starts.
+
+Progress tracking convention: mark a phase `[x]` only when its exit
+criteria, documentation and evidence are complete. A partial implementation
+remains `[ ]`; record its current state and open work in ROADMAP.md.
+
+- [ ] PHASE 0 - ARCHITECTURE, STANDARDS AND RECOVERY DESIGN
+  - Define repository structure, Git strategy, environments, naming,
+    versioning, dependency/update policy and ADR process.
+  - Define the application-selection policy: prefer maintained community
+    software and official charts/operators; do not fork or copy upstream
+    applications unless a concrete modification is required.
+  - Define the GitOps model: Git stores deployment declarations and owned
+    configuration; Helm/Kustomize deploy pinned upstream artifacts.
+  - Define state ownership, persistent-storage, secrets and full-recovery
+    requirements before selecting home-critical services.
+  - Exit: approved architecture, initial ADRs, service inventory template,
+    backup/restore matrix and no disruptive infrastructure changes.
+
+- [ ] PHASE 1 - INVENTORY / HOST BASELINE
+  - Inspect Ubuntu, CPU, RAM, disks, SMART/temperatures, network interfaces,
+    Ethernet, Wi-Fi, routing, DNS, firewall, SSH, runtime and virtualization.
+  - Exit: factual inventory, documented gaps/blockers and reviewed plan.
+
+- [ ] PHASE 2 - PHYSICAL NETWORK / FIREWALL DESIGN
+  - Verify Ethernet and repeater/AP topology; evaluate router/firewall
+    capabilities; design VLANs, firewall and multicast/discovery behaviour.
+  - Diagnose or isolate the Smart View/casting issue.
+  - Exit: reviewed network design and rollback plan. No critical network
+    change is made without explicit approval.
+
+- [ ] PHASE 3 - HOST, STORAGE AND BACKUP FOUNDATION
+  - Configure Ubuntu hardening, SSH, packages, filesystem/storage, Ansible,
+    host monitoring and backup destinations.
+  - Establish durable storage outside container filesystems and test a basic
+    host/data restore.
+  - Exit: automated host baseline and verified persistent-storage path.
+
+- [ ] PHASE 4 - KUBERNETES PLATFORM
+  - Implement Kubernetes, CNI, durable storage, ingress, namespaces,
+    resource policies, probes and baseline NetworkPolicies.
+  - Exit: a workload with a PVC survives pod recreation and host-recovery
+    procedures are documented.
+
+- [ ] PHASE 5 - GITOPS AND APPLICATION LIFECYCLE
+  - Configure GitHub Actions, Argo CD, projects/applications, sync policies,
+    drift detection and deployment conventions.
+  - Pin chart and image versions; use Helm values/Kustomize for local needs.
+  - Exit: a sample upstream application is reproducibly deployed from Git
+    without manually applying its normal state with kubectl.
+
+- [ ] PHASE 6 - PROGRESSIVE DELIVERY
+  - Add Argo Rollouts Blue/Green only where operationally useful, with smoke
+    tests, health checks, promotion, rollback and optional analysis.
+  - Exit: a controlled bad-release and rollback exercise is evidenced.
+
+- [ ] PHASE 7 - OBSERVABILITY
+  - Deploy Prometheus, Grafana, Loki, Alertmanager and required exporters;
+    create dashboards, actionable alerts and initial meaningful SLI/SLOs.
+  - Exit: deliberate service and host failures are detected and diagnosed.
+
+- [ ] PHASE 8 - SECURITY
+  - Implement RBAC, NetworkPolicies, encrypted secrets, TLS, image and
+    dependency scanning, audit and security monitoring.
+  - Exit: secrets are absent from plaintext Git and access is least-privilege.
+
+- [ ] PHASE 9 - DNS / NETWORK SERVICES
+  - Deploy AdGuard Home with persistent configuration, local DNS,
+    redundancy/fallback, VPN DNS integration and monitoring.
+  - Exit: DNS configuration and its restore have been tested.
+
+- [ ] PHASE 10 - PRIVATE REMOTE ACCESS
+  - Deploy WireGuard with individual peers, access policy, firewall rules,
+    remote DNS, monitoring and recovery of peer identity.
+  - Exit: remote access is tested without exposing management services.
+
+- [ ] PHASE 11 - OUTBOUND VPN
+  - Implement ExpressVPN policy routing for selected devices, local-traffic
+    bypass, failure behaviour and monitoring.
+  - Exit: policy and fail-safe behaviour are tested and documented.
+
+- [ ] PHASE 12 - SERVICE BACKUPS AND RECOVERY
+  - Implement per-service backups, retention, encryption, off-site copy and
+    restoration testing for application data, secrets and network devices.
+  - Exit: the backup/restore matrix has evidence for every critical service.
+
+- [ ] PHASE 13 - HOME AUTOMATION
+  - Deploy persistent Home Assistant and MQTT, then onboard devices,
+    sensors, lights, plugs, heating and automations.
+  - Protect coordinator/network backups and prove that a restore does not
+    require manually re-pairing supported devices.
+  - Exit: Home Assistant/MQTT restore is functionally verified.
+
+- [ ] PHASE 14 - CAMERAS / NVR
+  - Implement camera segmentation, NVR, durable recording storage, retention,
+    alerts and WireGuard-only remote access.
+  - Exit: NVR configuration and the agreed recording-recovery scope are tested.
+
+- [ ] PHASE 15 - MEDIA / PERSONAL SERVICES
+  - Add Jellyfin, Syncthing, file services and further approved services with
+    explicit persistence, backup, monitoring and security decisions.
+  - Exit: each service meets the Definition of Done below.
+
+- [ ] PHASE 16 - RELIABILITY / HA
+  - Add justified replicas, disruption budgets, topology spread and failure
+    tests for nodes, services and dependencies.
+  - Exit: resilience claims are supported by documented exercises.
+
+- [ ] PHASE 17 - INCIDENT MANAGEMENT
+  - Establish alerts, runbooks, incident templates, postmortems and
+    operational procedures.
+  - Exit: at least one realistic incident is handled end-to-end.
+
+- [ ] PHASE 18 - DISASTER RECOVERY EXERCISE
+  - Rebuild from a clean/replacement host: bootstrap, IaC, Kubernetes,
+    Argo CD, GitOps redeploy, data/secret restore and functional verification.
+  - Exit: the recovery time/result is recorded and corrective actions closed.
+
+- [ ] PHASE 19 - CONTINUOUS IMPROVEMENT
+  - Perform controlled dependency/platform/security upgrades and improve
+    performance, capacity, cost, architecture and documentation.
+  - Exit: ongoing, reviewed at each release; this phase is not permanently
+    marked complete.
+
+===============================================================================
+33. DEFINITION OF DONE
+===============================================================================
+
+A component is not considered complete merely because it runs.
+
+Where applicable, completion means:
+
+-   code/configuration is versioned
+-   dependencies are pinned/locked
+-   deployment is automated
+-   secrets are managed securely
+-   health checks exist
+-   monitoring exists
+-   logs are available
+-   alerts exist where useful
+-   backup strategy is defined
+-   persistent state is stored outside the container/ephemeral volume
+-   backup scope includes configuration, data and required identities
+-   a restore has been tested with documented evidence
+-   recovery behavior is understood
+-   security controls are applied
+-   documentation exists
+-   failure mode is known
+-   rollback strategy exists
+-   CI validation passes
+-   GitOps reconciliation works
+-   manual steps are minimized and documented
+
+For home-critical services, the Definition of Done additionally requires
+that a replacement-host recovery restores the service's useful state rather
+than presenting an empty, newly installed application.
+
+===============================================================================
+34. FINAL ARCHITECTURAL PRINCIPLE
+===============================================================================
+
+This project should behave like a small internal platform owned by an
+engineering team of one.
+
+The goal is not to imitate enterprise complexity.
+
+The goal is to practice enterprise-quality engineering discipline:
+
+-   design before implementation
+-   source control
+-   reproducibility
+-   automation
+-   least privilege
+-   immutable deployments
+-   progressive delivery
+-   observability
+-   reliability
+-   change management
+-   incident response
+-   disaster recovery
+-   continuous improvement
+
+The system should be capable of answering:
+
+    What is running?
+    Why is it running?
+    Which version is running?
+    Who changed it?
+    When was it changed?
+    Can we detect when it breaks?
+    Can we roll it back?
+    Can we recover it?
+    Can we rebuild it?
+    Can we prove that it is secure?
+    Can we upgrade it safely?
+
+If the answer to those questions is consistently “yes”, the project is
+achieving its intended purpose.
