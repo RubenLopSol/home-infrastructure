@@ -91,9 +91,12 @@ Exit criteria:
 
 Goal: install and verify the first physical Home Lab host.
 
+Current status: base Ubuntu Server installation is complete. Full inventory and
+post-install baseline work are still in progress.
+
 Tasks:
 
-- Install Ubuntu Server 26.04.1 LTS on the Acer Aspire E5-571G.
+- Install Ubuntu Server 26.04.1 LTS on the Acer Aspire E5-571G. Completed.
 - Record CPU, RAM, disk, network interfaces, firmware/BIOS notes, and storage.
 - Check disk health, SMART data where available, temperatures, and basic
   stability.

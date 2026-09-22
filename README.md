@@ -10,9 +10,9 @@ recuperación y servicios personales. El proyecto también funciona como
 laboratorio práctico para aprender operando sistemas reales, no solo
 desplegando ejemplos.
 
-La infraestructura todavía no está implementada. Este repositorio contiene la
-base documental, el contexto de diseño y la dirección técnica antes del primer
-baseline Git.
+La plataforma de infraestructura todavía no está implementada. El repositorio y
+la instalación base del sistema operativo ya existen; el siguiente trabajo es
+inventariar y endurecer el host antes de añadir componentes de infraestructura.
 
 ## Objetivo Técnico
 
@@ -74,11 +74,14 @@ Estado verificado:
 - Rama principal: `main`.
 - Remote: `origin` -> `git@github.com:RubenLopSol/home-infrastructure.git`.
 - Baseline inicial: `01595d3` (`Initial project baseline`).
-- La implementación de infraestructura no ha empezado.
-- Ubuntu Server todavía no está instalado.
+- Ubuntu Server 26.04.1 LTS está instalado en `homelab-server-01`.
+- La implementación de plataforma/servicios de infraestructura no ha empezado.
 - No existen directorios de implementación para Ansible, Terraform,
   Kubernetes, monitorización, backups o red.
 - No hay servicios desplegados.
+- La Fase 1 de instalación e inventario inicial del host está completada.
+- La revalidación física detallada de la red queda para la fase de diseño de
+  red.
 
 Hardware y sistema operativo decididos para el primer host:
 
@@ -88,9 +91,18 @@ Hardware y sistema operativo decididos para el primer host:
 | CPU | Intel i3-4005U | DECIDED |
 | RAM | 12 GB | DECIDED |
 | Disco | Kingston 240 GB SSD | DECIDED |
-| Sistema operativo objetivo | Ubuntu Server 26.04.1 LTS | DECIDED, no instalado |
+| Sistema operativo | Ubuntu Server 26.04.1 LTS | INSTALLED |
 
-La ISO de Ubuntu Server 26.04.1 LTS ya fue descargada y verificada por checksum.
+Instalación base observada:
+
+- Kernel tras primer arranque: `7.0.0-31-generic`.
+- Arquitectura: `x86_64`.
+- Modo de arranque: UEFI.
+- Sin entorno gráfico.
+- Usuario administrativo inicial: `ruben` con sudo.
+- Red inicial por DHCP en Ethernet: `192.168.1.181/24`.
+- OpenSSH Server instalado con autenticación por contraseña temporalmente
+  habilitada.
 
 ## Stack Técnico Previsto
 
@@ -104,7 +116,7 @@ implementado ni cerrado como decisión final.
 | Repositorio local | Git en rama `main` | DECIDED / CURRENT |
 | Remote / hosting | GitHub: `RubenLopSol/home-infrastructure` | DECIDED / CURRENT |
 | Host inicial | Acer Aspire E5-571G | DECIDED |
-| Sistema operativo | Ubuntu Server 26.04.1 LTS | DECIDED |
+| Sistema operativo | Ubuntu Server 26.04.1 LTS en `homelab-server-01` | DECIDED / CURRENT |
 | Gestión de configuración | Herramienta exacta pendiente | TBD |
 | Plataforma de aplicaciones | Kubernetes para servicios adecuados | PROPOSED |
 | Distribución Kubernetes | Distribución/version exacta | TBD |
@@ -203,8 +215,8 @@ Resumen de fases:
 | 1 | Definir alcance funcional y servicios previstos |
 | 2 | Diseñar arquitectura por capas y decisiones principales |
 | 3 | Preparar checklists y plantillas antes de tocar hardware |
-| 4 | Instalar e inventariar el host inicial |
-| 5 | Crear la base del host: usuarios, SSH, storage, hardening |
+| 4 | Instalación base del host inicial completada; inventario en curso |
+| 5 | Crear la base del host: SSH por clave, updates, firmware, firewall, hardening |
 | 6 | Diseñar red, firewall, acceso privado y rollback |
 | 7 | Definir storage, backups y recuperación |
 | 8 | Decidir e introducir plataforma de aplicaciones si procede |
@@ -213,8 +225,9 @@ Resumen de fases:
 | 11 | Incorporar primeros servicios domésticos |
 | 12 | Practicar fiabilidad, restore y mejora continua |
 
-El siguiente paso inmediato del proyecto es iniciar la fase de inventario del
-host y la red.
+El siguiente paso inmediato del proyecto es iniciar el baseline/hardening del
+servidor: actualizaciones, revisión de firmware, firewall, tooling mínimo de
+salud de disco y política operativa básica.
 
 El roadmap detallado está en `docs/architecture/project-roadmap.md`.
 
@@ -249,6 +262,8 @@ lo justifique.
 Documentos actuales:
 
 - `docs/architecture/home-infrastructure-target.md`: arquitectura objetivo.
+- `docs/architecture/initial-host-inventory.md`: inventario/checkpoint inicial
+  del host tras la instalación de Ubuntu Server.
 - `docs/architecture/project-roadmap.md`: fases de creación del proyecto,
   tareas y criterios de salida.
 - `docs/architecture/current-network-observations.md`: observaciones de red

@@ -11,11 +11,12 @@ state or a task note.
   - Establish decision tracking, prompts, and context-update rules.
   - Exit: approved context system, Git baseline, and no implementation drift.
 
-- [ ] Phase 1 - Host and Network Inventory
-  - Install Ubuntu Server 26.04.1 LTS on the Acer only after explicit task scope.
+- [x] Phase 1 - Host and Network Inventory
+  - Ubuntu Server 26.04.1 LTS base installation on the Acer is complete.
   - Inventory CPU, RAM, disk, SMART/temperature, network interfaces, routing,
     DNS, SSH, firewall, virtualization support, and Ethernet availability.
-  - Revalidate old network observations.
+  - Basic host and network inventory is complete. Detailed physical network
+    revalidation continues in Phase 2.
   - Exit: factual inventory and reviewed plan.
 
 - [ ] Phase 2 - Physical Network / Firewall Design

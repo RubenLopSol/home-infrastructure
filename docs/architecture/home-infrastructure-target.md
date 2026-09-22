@@ -13,8 +13,7 @@ docs/reference/original-context/ARQUITECTURA_OBJETIVO_HOME_INFRASTRUCTURE.md
 
 - The initial server baseline is the existing Acer Aspire E5-571G with Intel
   i3-4005U, 12 GB RAM, and Kingston 240 GB SSD.
-- Ubuntu Server 26.04.1 LTS is the selected installation target; it is not yet
-  installed.
+- Ubuntu Server 26.04.1 LTS is installed on `homelab-server-01`.
 - The previously proposed 32 GB RAM / 1 TB NVMe tower is a future option, not
   purchased or deployed current hardware.
 - Dedicated firewall/router, NAS, managed switch, UPS, VLANs, Kubernetes, Argo

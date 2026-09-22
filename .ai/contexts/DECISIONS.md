@@ -6,6 +6,20 @@
 - Initial physical server is the existing Acer Aspire E5-571G with Intel
   i3-4005U, 12 GB RAM, and Kingston 240 GB SSD.
 - Ubuntu Server 26.04.1 LTS is the selected installation target.
+- Initial hostname: `homelab-server-01`.
+- Initial administrator user: `ruben`.
+- Initial installation network path: Ethernet.
+- The Acer is a dedicated Home Lab server.
+- The full Kingston A400 240 GB SSD is used for Ubuntu Server.
+- Installer storage mode: whole disk with LVM enabled.
+- Full-disk encryption/LUKS is disabled for the initial installation.
+- The initial root filesystem logical volume is 100 GiB; remaining VG space is
+  intentionally left unallocated for later decision.
+- OpenSSH Server is installed during OS installation.
+- SSH password authentication remains temporarily enabled until key-based SSH
+  access is verified.
+- No orchestrator/runtime such as Docker, Podman, MicroK8s, or Kubernetes is
+  installed during the OS installation.
 - Historical OpenPanel / Project-DevOps material is reference only.
 - Do not treat the previously proposed 32 GB / 1 TB tower as purchased or
   deployed.
@@ -32,11 +46,13 @@
 
 ## TBD
 
-- Establish the first Git baseline.
 - Revalidate physical network topology, current devices, ISP/ONT/router
   constraints, Ethernet availability, and Smart View/casting behavior.
-- Decide whether the Acer is temporary bootstrap hardware or the longer Phase 1
-  host.
+- Verify SSH access from the workstation to `ruben@192.168.1.181`.
+- Configure SSH key-based authentication, verify it, then disable SSH password
+  authentication.
+- Study/configure DHCP reservation for `homelab-server-01`.
+- Decide how to allocate the remaining free space in `ubuntu-vg`.
 - Select Kubernetes distribution and version, if Kubernetes is approved.
 - Select final secret-management implementation.
 - Select backup destinations, off-site provider, retention, and encryption

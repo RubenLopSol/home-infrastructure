@@ -23,7 +23,8 @@ that keeps the home network alive.
 ## Proposed Physical Model
 
 The existing Acer Aspire E5-571G is the selected initial host for the first
-implementation phase, after the planned Ubuntu Server 26.04.1 LTS installation.
+implementation phase. Ubuntu Server 26.04.1 LTS is installed on
+`homelab-server-01`.
 
 Future expansion may introduce separate failure and security domains:
 
