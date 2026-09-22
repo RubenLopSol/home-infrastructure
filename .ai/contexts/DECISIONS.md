@@ -16,10 +16,13 @@
 - The initial root filesystem logical volume is 100 GiB; remaining VG space is
   intentionally left unallocated for later decision.
 - OpenSSH Server is installed during OS installation.
-- SSH password authentication remains temporarily enabled until key-based SSH
-  access is verified.
+- SSH password authentication is disabled after verifying key-based SSH access.
 - No orchestrator/runtime such as Docker, Podman, MicroK8s, or Kubernetes is
   installed during the OS installation.
+- Keep Ubuntu network addressing on DHCP for now, with the router providing a
+  DHCP reservation for the server MAC.
+- Keep the Home Lab server private on the LAN; do not expose SSH or management
+  services publicly in the current phase.
 - Historical OpenPanel / Project-DevOps material is reference only.
 - Do not treat the previously proposed 32 GB / 1 TB tower as purchased or
   deployed.
@@ -48,10 +51,6 @@
 
 - Revalidate physical network topology, current devices, ISP/ONT/router
   constraints, Ethernet availability, and Smart View/casting behavior.
-- Verify SSH access from the workstation to `ruben@192.168.1.181`.
-- Configure SSH key-based authentication, verify it, then disable SSH password
-  authentication.
-- Study/configure DHCP reservation for `homelab-server-01`.
 - Decide how to allocate the remaining free space in `ubuntu-vg`.
 - Select Kubernetes distribution and version, if Kubernetes is approved.
 - Select final secret-management implementation.

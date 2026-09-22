@@ -160,7 +160,26 @@ Observed disk identity:
 | Transport | SATA |
 | Device state | `running` |
 
-`smartmontools` is not installed yet, so SMART health has not been collected.
+`smartmontools` is installed and SMART health has been collected.
+
+SMART summary:
+
+| Item | Value |
+|---|---|
+| SMART support | Available and enabled |
+| Overall health self-assessment | PASSED |
+| Power-on hours | 213 |
+| Power cycle count | 344 |
+| Temperature | 25 C |
+| Reallocated event count | 0 |
+| Reported uncorrectable errors | 0 |
+| SATA CRC error count | 0 |
+| Unsafe shutdown count | 116 |
+| Lifetime writes | 1506 GiB |
+| Lifetime reads | 1353 GiB |
+| TRIM | Available |
+
+SMART error log and self-test log are not supported by this device.
 
 Observed filesystem usage:
 
@@ -186,8 +205,12 @@ Observed LVM state:
 | Item | Value |
 |---|---|
 | Ethernet interface | `enp1s0f1` |
-| Ethernet chipset | Realtek Gigabit Ethernet |
-| Current addressing | DHCP |
+| Ethernet chipset | Realtek RTL8111/8168/8211/8411 PCI Express Gigabit Ethernet |
+| NIC driver | `r8169` |
+| Link | 1 Gbps, full duplex |
+| Interface state | routable/configured/online |
+| Network manager | Netplan + systemd-networkd |
+| Current addressing | DHCPv4 with router DHCP reservation |
 | IPv4 observed during install/first boot | `192.168.1.181/24` |
 | MAC address | `f0:76:1c:be:7f:d1` |
 | Interface altname | `enxf0761cbe7fd1` |
@@ -221,9 +244,14 @@ Connectivity checks:
 These checks verify local gateway reachability, Internet reachability by IP, and
 DNS resolution at the time of testing.
 
-Pending post-install decision:
+DHCP reservation state:
 
-- Study/configure DHCP reservation in the router for `homelab-server-01`.
+- Router: Sagemcom F@st 5670Eth_EKT at `192.168.1.1`.
+- DHCP pool: `192.168.1.128` - `192.168.1.254`; lease time 86400 seconds.
+- Reservation: MAC `f0:76:1c:be:7f:d1` -> IPv4 `192.168.1.181`.
+- Router UI device name: `Add MAC Address`.
+- DHCP renewal validation succeeded; after `sudo networkctl renew enp1s0f1`, the
+  server retained `192.168.1.181/24`.
 
 ## SSH
 
@@ -262,7 +290,14 @@ Firewall state:
 
 | Item | Value |
 |---|---|
-| UFW | inactive |
+| UFW | active |
+| Logging | on (low) |
+| Default incoming | deny |
+| Default outgoing | allow |
+| Routed | disabled |
+| Allowed inbound | OpenSSH / `22/tcp` for IPv4 and IPv6 |
+
+SSH access using the workstation key/alias was verified after enabling UFW.
 
 Observed listening sockets:
 
@@ -292,10 +327,17 @@ Observed values:
 - Initial `/` usage: approximately 7.6%.
 - Initial RAM usage: approximately 3%.
 - Initial swap usage: 0%.
-- System reported 13 available updates.
-- System reported 2 devices with firmware upgrades available.
+- System initially reported 13 available updates and 2 firmware upgrades.
+- APT upgrades were applied successfully.
+- No reboot-required file was present after APT upgrades.
+- `rust-coreutils` remains pending due to Ubuntu phased rollout and was not
+  forced.
+- Firmware updates for UEFI CA and UEFI dbx were applied successfully.
+- The host rebooted successfully after firmware updates.
+- SSH access using the key/alias was verified after reboot.
+- Secure Boot remains enabled.
 
-Observed APT upgrades:
+Observed APT upgrades applied:
 
 | Package | Available version | Current version |
 |---|---|---|
@@ -310,11 +352,10 @@ Observed APT upgrades:
 | `python-apt-common` | `3.1.0ubuntu1.1` | `3.1.0ubuntu1` |
 | `python3-apt` | `3.1.0ubuntu1.1` | `3.1.0ubuntu1` |
 | `python3-netplan` | `1.2-1ubuntu5.1` | `1.2-1ubuntu5` |
-| `rust-coreutils` | `0.10.0-1ubuntu2~26.04.1` | `0.8.0-0ubuntu3` |
 | `sos` | `4.11.2-0ubuntu0.1` | `4.10.2-1` |
 | `thermald` | `2.5.11-0ubuntu1.1` | `2.5.11-0ubuntu1` |
 
-Observed firmware inventory highlights:
+Observed firmware inventory highlights before firmware update:
 
 - System firmware: Acer/Insyde, current version `856031344`.
 - BIOS region: current version `V1.32`.
@@ -322,14 +363,16 @@ Observed firmware inventory highlights:
 - SSD: KINGSTON SA400S37240G, current version `03070009`.
 - UEFI dbx: current version `20250902`.
 
-Observed firmware updates available:
+Observed firmware updates applied:
 
 | Device | Update | Current | New | Urgency |
 |---|---|---:|---:|---|
 | UEFI CA | Secure Boot Signature Database Configuration Update | 2011 | 2023 | High |
 | UEFI dbx | Secure Boot Forbidden Signature Database Update | 20250902 | 20260402 | High |
 
-Firmware updates have not been applied yet.
+Firmware report upload was declined. Disabling future firmware report prompts
+was attempted but failed due to authentication/polkit; this does not affect the
+applied firmware updates.
 
 ## User, Sudo And Time
 
@@ -359,22 +402,23 @@ Observed time state:
 
 The following have not yet been executed or configured:
 
-- `apt upgrade`
-- firmware upgrades
 - hardening
-- firewall
 - Docker/Podman
 - Kubernetes
 - observability
 - GitOps configuration
+The following remains pending:
+
+- `rust-coreutils` update when phased rollout reaches this host.
 
 ## Current Checkpoint
 
 The base operating system installation, initial SSH key hardening checkpoint,
-and initial host/network inventory are complete.
+initial updates/firmware, SMART collection, and initial host/network inventory
+are complete.
 
 Detailed physical network revalidation remains for the network design phase.
+The initial router DHCP reservation is configured and validated.
 
-Next checkpoint: begin baseline/hardening work, including updates, firmware
-review, firewall policy, and any missing disk health tooling such as
-`smartmontools`.
+Next checkpoint: continue baseline/hardening work, including firewall policy and
+remaining host hardening.

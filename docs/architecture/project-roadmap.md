@@ -134,18 +134,21 @@ Goal: understand and design the home network before changing critical routing.
 
 Tasks:
 
-- Revalidate ONT, router, repeater/AP, LAN, and Ethernet availability.
-- Revalidate the historical Smart View/casting issue.
+- Phase 2A: document the current router/server LAN baseline using existing
+  hardware. Completed for the current hardware set.
 - Document current network facts separately from target design.
-- Design future network segmentation, firewall policy, and multicast/discovery
-  behavior.
-- Decide whether and when a dedicated router/firewall is introduced.
-- Design private remote access, likely WireGuard, without depending on
-  Kubernetes for recovery.
+- Keep dedicated router/firewall, managed switch, VLANs, NAS, UPS, and wired APs
+  as future/proposed until hardware exists and decisions are made.
+- Phase 2B: design future network segmentation, firewall policy,
+  multicast/discovery behavior, private access, and rollback after future
+  hardware decisions.
+- Revalidate the historical Smart View/casting issue if still relevant.
 
 Exit criteria:
 
-- Network changes have a reviewed rollback plan.
+- Phase 2A current network baseline is documented with existing hardware.
+- Phase 2B remains explicitly pending until hardware and decisions exist.
+- Network changes have a reviewed rollback plan before implementation.
 - Critical network functions are not moved blindly.
 - Remote access design does not expose management services publicly.
 

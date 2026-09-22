@@ -100,9 +100,9 @@ Instalación base observada:
 - Modo de arranque: UEFI.
 - Sin entorno gráfico.
 - Usuario administrativo inicial: `ruben` con sudo.
-- Red inicial por DHCP en Ethernet: `192.168.1.181/24`.
-- OpenSSH Server instalado con autenticación por contraseña temporalmente
-  habilitada.
+- Red por Ethernet con DHCP y reserva en el router: `192.168.1.181/24`.
+- OpenSSH Server instalado; acceso por clave SSH verificado y autenticación SSH
+  por contraseña deshabilitada.
 
 ## Stack Técnico Previsto
 
@@ -268,6 +268,8 @@ Documentos actuales:
   tareas y criterios de salida.
 - `docs/architecture/current-network-observations.md`: observaciones de red
   históricas pendientes de revalidación.
+- `docs/architecture/current-network-inventory.md`: inventario de red actual
+  verificado desde el servidor.
 - `docs/architecture/state-and-recovery-model.md`: modelo de estado, backup y
   recuperación.
 - `docs/architecture/definition-of-done.md`: criterios de finalización para

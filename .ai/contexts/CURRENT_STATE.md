@@ -21,12 +21,18 @@ pending revalidation.
 
 - Phase 0 repository/context baseline is complete.
 - Phase 1 initial host and basic network inventory is complete.
-- Detailed physical network revalidation remains for the network design phase.
+- Initial LAN addressing for the server has been stabilized with a router DHCP reservation.
+- Phase 2A current-network baseline is complete for the hardware currently available.
+- Phase 2B future network design is pending future hardware purchases and decisions.
 - Ubuntu Server base installation is complete.
 - Infrastructure platform implementation has not started.
 - No Kubernetes, Terraform, Ansible, GitOps, NAS, dedicated firewall/router,
-  VLAN, AdGuard Home, SOPS/age, GitHub Actions, Argo CD, or Argo Rollouts
-  implementation has been created by this repository.
+  managed switch, dedicated wired AP, UPS, VLAN, AdGuard Home, SOPS/age,
+  GitHub Actions, Argo CD, or Argo Rollouts implementation has been created by
+  this repository.
+- Current available network hardware is limited to the ISP/router, existing
+  repeaters, and `homelab-server-01`. Additional network/storage/power hardware
+  has not been purchased yet.
 
 ## Initial Host
 
@@ -66,12 +72,19 @@ pending revalidation.
 ## Initial Network And SSH State
 
 - Ethernet interface detected: `enp1s0f1`.
-- Ethernet chipset: Realtek Gigabit Ethernet.
-- Current network configuration: DHCP.
-- IPv4 observed during installation/first boot: `192.168.1.181/24`.
-- No static IP has been configured.
-- Pending post-install decision: study/configure DHCP reservation in the router
-  for `homelab-server-01`.
+- Alternative interface name: `enxf0761cbe7fd1`.
+- NIC driver: `r8169`.
+- NIC: Realtek RTL8111/8168/8211/8411 PCI Express Gigabit Ethernet.
+- MAC address: `f0:76:1c:be:7f:d1`.
+- Link: 1 Gbps, full duplex.
+- Interface state: routable/configured/online.
+- Networking is managed through Netplan and systemd-networkd.
+- Current network configuration: DHCPv4.
+- Current IPv4: `192.168.1.181/24`.
+- Router/DHCP server/gateway: `192.168.1.1`.
+- No static IP has been configured on Ubuntu.
+- Router DHCP reservation is configured and validated for MAC
+  `f0:76:1c:be:7f:d1` -> `192.168.1.181`.
 - No proxy was configured.
 - Ubuntu archive mirror: official Spanish Ubuntu mirror.
 - Installer connectivity check completed successfully.
@@ -98,20 +111,31 @@ pending revalidation.
 - Initial swap usage observed: 0%.
 - System reported 13 available updates.
 - System reported 2 devices with available firmware upgrades.
+- APT upgrades were applied successfully.
+- `rust-coreutils` remains pending due to Ubuntu phased rollout and was not
+  forced.
+- UEFI CA firmware/signature database was updated from 2011 to 2023.
+- UEFI dbx was updated from 20250902 to 20260402.
+- The host rebooted successfully after firmware updates.
+- SSH access using the key/alias was verified after reboot.
+- Secure Boot remains enabled.
+- `smartmontools` is installed.
+- SMART health for `/dev/sda` was collected and overall self-assessment is
+  PASSED.
+- UFW is active with default incoming deny, outgoing allow, routed disabled, and
+  OpenSSH allowed for IPv4/IPv6.
+- SSH access using the workstation key/alias was verified after enabling UFW.
 - Initial user/sudo/time inventory is complete.
 - User `ruben` is in groups: `ruben`, `adm`, `cdrom`, `sudo`, `dip`,
   `plugdev`, `users`, `lxd`.
 - System timezone is `Etc/UTC`; NTP is active and synchronized.
 - The following have not yet been executed/configured:
-  - `apt upgrade`
-  - firmware upgrades
-  - hardening
-  - firewall
+  - remaining host hardening
   - Docker/Podman
   - Kubernetes
   - observability
   - GitOps configuration
-  - SMART health collection with `smartctl`
+  - forced upgrade of `rust-coreutils`, pending Ubuntu phased rollout
 
 ## Previously Observed Network Information
 
@@ -119,10 +143,38 @@ The old context contains useful network observations, but they are not promoted
 to verified current state. They should be revalidated before being used for
 implementation decisions.
 
+Current verified network inventory is tracked in
+`docs/architecture/current-network-inventory.md`.
+
+Verified current network facts:
+
+- `homelab-server-01` is connected by Ethernet on `enp1s0f1`.
+- Interface altname: `enxf0761cbe7fd1`.
+- NIC driver: `r8169`.
+- NIC: Realtek RTL8111/8168/8211/8411 PCI Express Gigabit Ethernet.
+- Link: 1 Gbps, full duplex.
+- Server MAC: `f0:76:1c:be:7f:d1`.
+- Server IPv4: `192.168.1.181/24` via DHCPv4.
+- DHCP reservation validated: router binds `f0:76:1c:be:7f:d1` to
+  `192.168.1.181`.
+- Router model: Sagemcom F@st 5670Eth_EKT.
+- LAN subnet: `192.168.1.0/24`.
+- DHCP pool: `192.168.1.128` - `192.168.1.254`.
+- DHCP lease time: 86400 seconds.
+- Gateway/DHCP server: `192.168.1.1`, MAC `08:7b:12:dc:24:07`.
+- DNS via DHCP: `77.26.11.233`, `212.142.173.65`.
+- Workstation observed from server: `192.168.1.140`, MAC `e4:54:e8:3a:b9:3f`.
+- Gateway and Internet/DNS connectivity have been verified.
+- DHCP renewal validation succeeded; the server retained `192.168.1.181/24`.
+- For this phase, only a DHCP reservation was changed. WAN firewall, port
+  forwarding, DMZ, public exposure, VLANs, global DNS, DHCP pool, and router
+  gateway were not changed.
+
 Previously observed:
 
 - Nokia G-010G-P appeared to be the ONT.
-- Main router/gateway appeared to be Sagemcom F@ST 5657.
+- Main router/gateway appeared to be Sagemcom F@ST 5657 in older notes;
+  current verified router model is Sagemcom F@st 5670Eth_EKT.
 - Two ZTE ZXHN H3601 V9.1 devices appeared to operate in repeater mode.
 - LAN appeared to be `192.168.1.0/24` with gateway `192.168.1.1`.
 - Smart View / casting instability was suspected to relate to repeater or

@@ -20,10 +20,17 @@ state or a task note.
   - Exit: factual inventory and reviewed plan.
 
 - [ ] Phase 2 - Physical Network / Firewall Design
-  - Verify ISP/ONT/router constraints and repeater/AP topology.
-  - Design VLANs, firewall policy, multicast/discovery behavior, and rollback.
-  - Diagnose or isolate Smart View/casting instability.
-  - Exit: reviewed network design; no critical change without approval.
+  - [x] Phase 2A: current network baseline with existing hardware is documented.
+  - [x] DHCP reservation for `homelab-server-01` is configured and validated.
+  - [x] Current limitation is documented: available hardware is the ISP/router,
+    existing repeaters, and `homelab-server-01`.
+  - [ ] Phase 2B is pending future hardware purchases and decisions.
+  - Keep VLANs, dedicated firewall/router, managed switch, NAS, UPS, and wired
+    APs as future/proposed design until hardware exists and decisions are made.
+  - Later Phase 2B design should cover segmentation, firewall policy,
+    multicast/discovery behavior, private access, and rollback.
+  - Exit: Phase 2 remains open until Phase 2B is reviewed or deliberately
+    deferred into a later roadmap phase.
 
 - [ ] Phase 3 - Host, Storage, and Backup Foundation
   - Define host baseline, storage layout, backup destinations, and restore path.

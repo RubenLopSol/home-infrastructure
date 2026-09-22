@@ -32,9 +32,10 @@ Future expansion may introduce separate failure and security domains:
 router/firewall != application server != backup/storage system
 ```
 
-Future dedicated hardware such as a router/firewall, managed switch, NAS, UPS,
-wired access points, or a larger application server remains proposed until
-explicitly decided and acquired.
+Current available network hardware is limited to the ISP/router, existing
+repeaters, and `homelab-server-01`. Future dedicated hardware such as a
+router/firewall, managed switch, NAS, UPS, wired access points, or a larger
+application server remains proposed until explicitly decided and acquired.
 
 The previously proposed 32 GB RAM / 1 TB NVMe tower is a future option, not
 current state.
@@ -57,10 +58,11 @@ These are not implemented yet.
 
 ## Proposed Network Direction
 
-The proposed long-term network design includes segmented zones such as home,
-servers, IoT/security, guests, and VPN. Exact VLAN IDs, subnets, firewall rules,
-router/firewall model, ISP constraints, and multicast/discovery behavior remain
-to be verified.
+The current network-design phase must first document the existing router,
+repeaters, and server without assuming future hardware. The proposed long-term
+network design may include segmented zones such as home, servers, IoT/security,
+guests, and VPN. Exact VLAN IDs, subnets, firewall rules, router/firewall model,
+ISP constraints, and multicast/discovery behavior remain to be verified.
 
 WireGuard is proposed for private remote access, preferably on the
 router/firewall or another stable network-plane host rather than inside
