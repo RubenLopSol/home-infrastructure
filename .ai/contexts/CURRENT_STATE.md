@@ -143,6 +143,21 @@ pending revalidation.
   - GitOps configuration
   - forced upgrade of `rust-coreutils`, pending Ubuntu phased rollout
 
+
+## Initial Backup State
+
+- Target future storage/backup direction: NAS with two disks in RAID1.
+- The NAS has not been purchased or implemented yet.
+- RAID1 is not treated as a substitute for backup.
+- Current provisional backup target: existing external TOSHIBA USB disk mounted
+  on the workstation as `BACKUP_2TB` at `/media/kiyana/BACKUP_2TB`.
+- The external disk uses exFAT and has approximately 1.8 TiB usable capacity.
+- Provisional Home Lab backup area exists at
+  `/media/kiyana/BACKUP_2TB/HomeLab/`.
+- The 64 GB USB device is not the primary Home Lab backup target.
+- No final backup tool, retention policy, encryption model, NAS share layout, or
+  off-site strategy has been selected yet.
+
 ## Previously Observed Network Information
 
 The old context contains useful network observations, but they are not promoted

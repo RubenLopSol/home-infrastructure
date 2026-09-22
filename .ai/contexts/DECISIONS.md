@@ -18,6 +18,12 @@
   for persistent Home Lab data.
 - Keep the remaining free space in `ubuntu-vg` reserved for future growth or
   new volumes when real requirements exist.
+- The target storage/backup direction is a future NAS with two disks in RAID1.
+- Use the existing external `BACKUP_2TB` disk as a temporary, non-destructive
+  backup target until the NAS exists.
+- Do not use the 64 GB USB installer/rescue device as the primary Home Lab
+  backup target.
+- Treat RAID1 as availability protection, not as a backup replacement.
 - OpenSSH Server is installed during OS installation.
 - SSH password authentication is disabled after verifying key-based SSH access.
 - No orchestrator/runtime such as Docker, Podman, MicroK8s, or Kubernetes is
@@ -45,7 +51,6 @@
 - VLAN/network segmentation for home, servers, IoT/security, guests, and VPN.
 - Dedicated firewall/router for routing, DHCP, firewall policy, VLANs, and
   WireGuard.
-- NAS or other backup/storage system.
 - Managed switch, UPS, wired APs, and future larger application server.
 - Observability with Prometheus, Grafana, Loki, and Alertmanager.
 - Per-service backup/restore matrix and restore-tested recovery.
@@ -56,8 +61,9 @@
   constraints, Ethernet availability, and Smart View/casting behavior.
 - Select Kubernetes distribution and version, if Kubernetes is approved.
 - Select final secret-management implementation.
-- Select backup destinations, off-site provider, retention, and encryption
-  details.
+- Select final NAS model/disks/filesystem/share layout.
+- Select final backup tooling, retention, encryption, restore-test cadence, and
+  off-site strategy.
 - Decide exact documentation language policy for future files.
 
 ## REJECTED

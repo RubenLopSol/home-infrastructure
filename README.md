@@ -129,7 +129,7 @@ implementado ni cerrado como decisión final.
 | Acceso remoto privado | WireGuard fuera del plano crítico de Kubernetes | PROPOSED |
 | Segmentación de red | VLANs para home, servers, IoT/security, guests, VPN | PROPOSED |
 | Firewall/router dedicado | Routing, DHCP, VLANs, firewall, WireGuard | PROPOSED |
-| Storage / backups | NAS u otro sistema dedicado de backup/storage | PROPOSED |
+| Storage / backups | NAS futuro con 2 discos en RAID1; disco externo `BACKUP_2TB` como backup provisional | DECIDED direction / TEMPORARY current |
 | Observabilidad | Prometheus, Grafana, Loki, Alertmanager | PROPOSED |
 | Recuperación | Matriz por servicio + restauración probada | PROPOSED |
 | Host futuro más grande | Torre 32 GB / 1 TB discutida previamente | PROPOSED, no comprada/desplegada |

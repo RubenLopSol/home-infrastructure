@@ -36,7 +36,9 @@ state or a task note.
   - [x] Initial storage layout decision: create 80 GiB `/srv` LV and keep
     remaining VG space reserved.
   - [x] Apply and validate `/srv` mount on the server.
-  - [ ] Define initial backup destination and restore path.
+  - [x] Define target backup direction: future NAS with two disks in RAID1.
+  - [x] Define temporary backup target: existing external `BACKUP_2TB` disk.
+  - [ ] Define and test first concrete backup/restore procedure.
   - Exit: durable storage and basic restore path are tested.
 
 - [ ] Phase 4 - Application Platform
