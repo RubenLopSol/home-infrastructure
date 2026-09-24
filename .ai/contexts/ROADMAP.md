@@ -56,6 +56,8 @@ state or a task note.
   - [x] Persistent smoke pod recreation behavior validated.
   - [x] Backup and restore behavior for persistent smoke data validated with
     `BACKUP_2TB`.
+  - [x] Initial Kustomize-managed `local-path-srv` StorageClass installed and
+    validated with dynamic PVC smoke test, backup, restore, and cleanup.
   - Exit: sample persistent workload survives restart and recovery exercise.
 
 - [ ] Phase 5 - GitOps and Lifecycle

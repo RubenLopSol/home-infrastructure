@@ -89,6 +89,64 @@ It creates:
 The smoke test should validate PVC binding, pod mount behavior, file
 persistence after pod recreation, backup to `BACKUP_2TB`, restore, and cleanup.
 
+## Installation Evidence
+
+`local-path-srv` was installed on 2026-09-24 from:
+
+```text
+kubernetes/platform/storage/local-path-provisioner/
+```
+
+Observed state after installation:
+
+| Item | Value |
+|---|---|
+| Namespace | `local-path-storage` |
+| Deployment | `local-path-provisioner` |
+| Deployment status | `1/1` available |
+| StorageClass | `local-path-srv` |
+| Default StorageClass | yes |
+| Provisioner | `rancher.io/local-path` |
+| Reclaim policy | `Retain` |
+| Binding mode | `WaitForFirstConsumer` |
+| Data root | `/srv/k3s/storage` |
+
+Dynamic PVC smoke test completed on 2026-09-24:
+
+| Item | Value |
+|---|---|
+| Namespace | `storage-smoke` |
+| PVC | `local-path-srv-smoke` |
+| PVC size | `64Mi` |
+| Pod | `local-path-srv-smoke` |
+| Image | `busybox:1.36` |
+| Test file | `proof.txt` |
+| Test content | `local-path-srv smoke 2026-09-24T14:37:16Z` |
+| SHA256 | `7057a562a395f4c83bdb80ee12a2fe6d137eebb91fc64e2dda48912a231d7a55` |
+
+Validated behavior:
+
+- PVC bound dynamically using `local-path-srv`.
+- PV was created under `/srv/k3s/storage`.
+- The pod mounted the PVC at `/data`.
+- The test file was written from inside the pod.
+- The same file and SHA256 were visible from the host.
+- Deleting and recreating the pod preserved the file.
+- Backup to `BACKUP_2TB` was validated at:
+  `/media/kiyana/BACKUP_2TB/HomeLab/backups/2026-09-24-local-path-srv-smoke/pvc-data/`.
+- Restore was validated at:
+  `/tmp/homelab-restore-test-2026-09-24-local-path-srv/pvc-data/`.
+- Source, staging, backup, and restore SHA256 values matched.
+- The smoke-test namespace, PVC, retained PV, retained data directory, and
+  temporary staging directory were deleted after validation.
+
+Current post-test state:
+
+- `local-path-srv` remains installed.
+- `local-path-provisioner` remains running.
+- No smoke-test PVs remain.
+- `/srv/k3s/storage` exists and is empty after cleanup.
+
 ## Future Direction
 
 When NAS or multi-node hardware exists, Kubernetes storage should be revisited.

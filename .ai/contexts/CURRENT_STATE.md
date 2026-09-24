@@ -133,6 +133,13 @@ pending revalidation.
 - Packaged local-storage provisioner was disabled during installation.
 - `kubectl get storageclass` returned no resources after installation.
 - `kubectl get ingressclass` returned no resources after installation.
+- Rancher Local Path Provisioner is installed as a pure Kustomize-managed
+  platform component from
+  `kubernetes/platform/storage/local-path-provisioner/`.
+- StorageClass `local-path-srv` exists, is marked default, uses provisioner
+  `rancher.io/local-path`, has `Retain` reclaim policy, and uses
+  `WaitForFirstConsumer` binding.
+- `local-path-srv` provisions under `/srv/k3s/storage`.
 - Initial observed Kubernetes node metrics:
   - CPU: `154m`, approximately 3%.
   - Memory: `703Mi`, approximately 6%.
@@ -175,8 +182,27 @@ pending revalidation.
   - Source, backup, and restored file SHA256 values matched.
   - The `homelab-persistence-test` namespace was deleted after validation,
     leaving no manual persistent test pod running.
-  - The local source evidence file remains on the server under
-    `/srv/k3s-test/persistent-smoke/proof.txt`.
+  - The temporary local evidence directory `/srv/k3s-test` was deleted after
+    backup/restore validation.
+- A dynamic PVC smoke test validated `local-path-srv`:
+  - Smoke test manifests live under
+    `kubernetes/smoke-tests/storage/local-path-srv/`.
+  - Namespace: `storage-smoke`.
+  - PVC: `local-path-srv-smoke`, size `64Mi`.
+  - Pod: `local-path-srv-smoke`, image `busybox:1.36`.
+  - Dynamic PV was created under `/srv/k3s/storage`.
+  - Test file content:
+    `local-path-srv smoke 2026-09-24T14:37:16Z`.
+  - SHA256:
+    `7057a562a395f4c83bdb80ee12a2fe6d137eebb91fc64e2dda48912a231d7a55`.
+  - Deleting and recreating the pod preserved the file through the PVC.
+  - Backup to `BACKUP_2TB` was validated at
+    `/media/kiyana/BACKUP_2TB/HomeLab/backups/2026-09-24-local-path-srv-smoke/pvc-data/`.
+  - Restore was validated on the workstation at
+    `/tmp/homelab-restore-test-2026-09-24-local-path-srv/pvc-data/`.
+  - Source, staging, backup, and restored file SHA256 values matched.
+  - The `storage-smoke` namespace, smoke-test PV, retained PV data directory,
+    and temporary staging directory were deleted after validation.
 
 ## First Boot Observations
 
