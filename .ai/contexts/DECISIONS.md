@@ -49,6 +49,18 @@
 - Disable packaged Traefik, ServiceLB, and local-storage during the initial
   k3s installation so ingress/load balancing and persistent storage can be
   designed deliberately.
+- Use Rancher Local Path Provisioner as the initial single-node Kubernetes
+  dynamic storage mechanism, configured to provision under `/srv/k3s/storage`.
+- Treat `local-path-srv` storage as initial single-node local storage, not as
+  final multi-node, NAS, or high-availability storage.
+- Use `Retain` as the initial reclaim policy for `local-path-srv` so deleting a
+  PVC does not automatically delete the underlying local data.
+- Use Kustomize as the common Kubernetes deployment interface.
+- Use Helm through Kustomize `helmCharts` when an upstream chart is mature and
+  useful; use pure Kustomize for small infrastructure components where raw
+  manifests plus patches provide clearer control.
+- Manage Local Path Provisioner as a pure Kustomize component rather than a
+  Helm chart.
 - Keep frequently loaded AI context small.
 - Model escalation and reasoning-effort escalation require explicit approval.
 
@@ -75,6 +87,7 @@
 - Select Kubernetes distribution and version, if Kubernetes is approved.
 - Select final secret-management implementation.
 - Select final NAS model/disks/filesystem/share layout.
+- Select final Kubernetes storage model for NAS/multi-node use.
 - Select final backup tooling, retention, encryption, restore-test cadence, and
   off-site strategy.
 - Decide whether future network/storage hardware should use 1 GbE, 2.5 GbE,
