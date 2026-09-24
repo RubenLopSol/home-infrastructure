@@ -50,6 +50,7 @@ state or a task note.
     `homelab-server-01`, preserving future multi-node expansion.
   - [x] Initial k3s platform installed and validated with no Traefik,
     ServiceLB, or default local-storage provisioner.
+  - [x] Stateless nginx smoke workload validated and cleaned up.
   - [ ] Define first workload and persistence model.
   - [ ] Validate sample workload restart/redeploy behavior.
   - [ ] Validate restore behavior for any persistent test data.

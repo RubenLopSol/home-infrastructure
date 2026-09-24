@@ -285,6 +285,33 @@ net.bridge.bridge-nf-call-ip6tables = 1
 
 The `overlay` and `br_netfilter` modules were loaded and verified.
 
+## Stateless Workload Smoke Test
+
+A first stateless workload smoke test was completed on 2026-09-24.
+
+Test scope:
+
+- namespace: `homelab-test`
+- deployment: `hello-nginx`
+- image: `nginx:alpine`
+- replicas: `1`
+- service: `hello-nginx` as `ClusterIP`
+- internal test client: temporary `busybox:1.36` pod
+
+Validated behavior:
+
+- The pod scheduled on `homelab-server-01`.
+- The pod reached `Running` with no restarts.
+- The `hello-nginx` service received an internal cluster IP.
+- Cluster DNS resolved `http://hello-nginx` from another pod.
+- The temporary test client fetched the nginx welcome page successfully.
+- Deleting the nginx pod caused the Deployment to recreate a new running pod.
+- The `homelab-test` namespace was deleted after the smoke test.
+
+This validated basic scheduling, CoreDNS, ClusterIP service routing, and
+Deployment reconciliation. It did not validate persistence, ingress, backup, or
+restore behavior.
+
 ## Candidate First Workload
 
 The first workload should be intentionally boring:

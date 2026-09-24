@@ -148,6 +148,15 @@ pending revalidation.
   - `net.bridge.bridge-nf-call-iptables = 1`
   - `net.bridge.bridge-nf-call-ip6tables = 1`
 - Kernel modules `overlay` and `br_netfilter` were loaded and verified.
+- A temporary stateless smoke workload was validated in namespace
+  `homelab-test` using `nginx:alpine`:
+  - Deployment scheduled successfully.
+  - A `ClusterIP` service named `hello-nginx` resolved through cluster DNS.
+  - A temporary `busybox:1.36` pod successfully fetched the nginx welcome page
+    from `http://hello-nginx`.
+  - Deleting the nginx pod caused the Deployment to recreate it successfully.
+  - The `homelab-test` namespace was deleted after validation, leaving no
+    manual test workload running.
 
 ## First Boot Observations
 
