@@ -84,7 +84,6 @@
 
 - Revalidate physical network topology, current devices, ISP/ONT/router
   constraints, Ethernet availability, and Smart View/casting behavior.
-- Select Kubernetes distribution and version, if Kubernetes is approved.
 - Select final secret-management implementation.
 - Select final NAS model/disks/filesystem/share layout.
 - Select final Kubernetes storage model for NAS/multi-node use.

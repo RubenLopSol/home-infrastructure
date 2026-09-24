@@ -10,9 +10,10 @@ recuperación y servicios personales. El proyecto también funciona como
 laboratorio práctico para aprender operando sistemas reales, no solo
 desplegando ejemplos.
 
-La plataforma de infraestructura todavía no está implementada. El repositorio y
-la instalación base del sistema operativo ya existen; el siguiente trabajo es
-inventariar y endurecer el host antes de añadir componentes de infraestructura.
+El repositorio, la instalación base del sistema operativo, la base de storage
+en `/srv` y una primera plataforma k3s single-node ya existen. El proyecto aún
+no tiene servicios domésticos de producción, GitOps, observabilidad completa ni
+hardware dedicado de red/storage; esos pasos siguen siendo trabajo futuro.
 
 ## Objetivo Técnico
 
@@ -75,11 +76,19 @@ Estado verificado:
 - Remote: `origin` -> `git@github.com:RubenLopSol/home-infrastructure.git`.
 - Baseline inicial: `01595d3` (`Initial project baseline`).
 - Ubuntu Server 26.04.1 LTS está instalado en `homelab-server-01`.
-- La implementación de plataforma/servicios de infraestructura no ha empezado.
-- No existen directorios de implementación para Ansible, Terraform,
-  Kubernetes, monitorización, backups o red.
-- No hay servicios desplegados.
 - La Fase 1 de instalación e inventario inicial del host está completada.
+- La Fase 3 de storage, backup y recuperación inicial está completada.
+- La Fase 4 de plataforma de aplicaciones está en curso con k3s single-node ya
+  instalado en `homelab-server-01`.
+- Rancher Local Path Provisioner está instalado como componente Kustomize en
+  `kubernetes/platform/storage/local-path-provisioner/`.
+- La StorageClass `local-path-srv` existe, es la predeterminada y provisiona en
+  `/srv/k3s/storage` con política `Retain`.
+- Los smoke tests stateless, persistent `hostPath` temporal y dynamic PVC con
+  backup/restore han sido validados y limpiados.
+- No hay servicios domésticos o personales de producción desplegados.
+- No existen directorios de implementación para Ansible, Terraform,
+  monitorización, backups o red.
 - La revalidación física detallada de la red queda para la fase de diseño de
   red.
 
@@ -118,8 +127,9 @@ implementado ni cerrado como decisión final.
 | Host inicial | Acer Aspire E5-571G | DECIDED |
 | Sistema operativo | Ubuntu Server 26.04.1 LTS en `homelab-server-01` | DECIDED / CURRENT |
 | Gestión de configuración | Herramienta exacta pendiente | TBD |
-| Plataforma de aplicaciones | Kubernetes para servicios adecuados | PROPOSED |
-| Distribución Kubernetes | Distribución/version exacta | TBD |
+| Plataforma de aplicaciones | Kubernetes para servicios adecuados | DECIDED / CURRENT |
+| Distribución Kubernetes | k3s `v1.36.4+k3s1` single-node en `homelab-server-01` | DECIDED / CURRENT |
+| Kubernetes storage inicial | Rancher Local Path Provisioner, StorageClass `local-path-srv`, data root `/srv/k3s/storage` | DECIDED / CURRENT |
 | CI / validación | GitHub Actions | PROPOSED |
 | GitOps | Argo CD | PROPOSED |
 | Progressive delivery | Argo Rollouts donde aporte valor | PROPOSED |
@@ -156,8 +166,10 @@ observabilidad
 feedback / rollback / recovery
 ```
 
-Este flujo todavía no existe. Es el modelo operativo que se quiere construir
-progresivamente.
+Este flujo existe parcialmente: Git y documentación ya gobiernan las decisiones
+del repositorio, y k3s/storage inicial tienen manifests versionados. CI, GitOps,
+observabilidad completa y despliegue reproducible de servicios siguen
+pendientes.
 
 La configuración manual no queda prohibida para investigación, diagnóstico o
 recuperación, pero el estado duradero de la plataforma debe acabar representado
@@ -211,23 +223,18 @@ Resumen de fases:
 
 | Fase | Objetivo |
 |---|---|
-| 0 | Baseline del repositorio y Git como fuente de verdad |
-| 1 | Definir alcance funcional y servicios previstos |
-| 2 | Diseñar arquitectura por capas y decisiones principales |
-| 3 | Preparar checklists y plantillas antes de tocar hardware |
-| 4 | Instalación base del host inicial completada; inventario en curso |
-| 5 | Crear la base del host: SSH por clave, updates, firmware, firewall, hardening |
-| 6 | Diseñar red, firewall, acceso privado y rollback |
-| 7 | Definir storage, backups y recuperación |
-| 8 | Decidir e introducir plataforma de aplicaciones si procede |
-| 9 | Añadir GitOps y ciclo de entrega reproducible si procede |
-| 10 | Añadir observabilidad, seguridad y secretos |
-| 11 | Incorporar primeros servicios domésticos |
-| 12 | Practicar fiabilidad, restore y mejora continua |
+| 0 | Contexto, baseline del repositorio y Git como fuente de verdad completados |
+| 1 | Instalación e inventario inicial del host completados |
+| 2 | Red física/firewall: baseline actual completado; diseño futuro pendiente |
+| 3 | Host, storage y backup foundation completados |
+| 4 | Plataforma k3s inicial en curso con storage dinámico validado |
+| 5 | GitOps y ciclo de entrega reproducible si procede |
+| 6 | Observabilidad, seguridad, secretos y recuperación |
+| Later | Servicios domésticos y fiabilidad continua |
 
-El siguiente paso inmediato del proyecto es iniciar el baseline/hardening del
-servidor: actualizaciones, revisión de firmware, firewall, tooling mínimo de
-salud de disco y política operativa básica.
+El siguiente paso inmediato del proyecto es cerrar o ampliar la Fase 4:
+definir el primer workload reproducible desde Git y decidir si se introduce
+validación/GitOps antes de servicios domésticos reales.
 
 El roadmap detallado está en `docs/architecture/project-roadmap.md`.
 
@@ -240,6 +247,7 @@ README.md
 AGENTS.md
 .ai/
 docs/
+kubernetes/
 ```
 
 `README.md` es la entrada humana al proyecto.
@@ -253,9 +261,10 @@ es implementación del Home Lab.
 `docs/` contiene documentación técnica del proyecto. Debe ser útil de forma
 independiente de Codex/ChatGPT.
 
-Directorios futuros de implementación, como Ansible, Kubernetes, Terraform,
-scripts, monitorización o backups, se crearán solo cuando haya trabajo real que
-lo justifique.
+Directorios futuros de implementación, como Ansible, Terraform, scripts,
+monitorización o backups, se crearán solo cuando haya trabajo real que lo
+justifique. `kubernetes/` ya existe porque contiene la plataforma k3s inicial y
+smoke tests versionados.
 
 ## Documentación Técnica
 
@@ -274,6 +283,14 @@ Documentos actuales:
   recuperación.
 - `docs/architecture/definition-of-done.md`: criterios de finalización para
   componentes.
+- `docs/architecture/initial-storage-foundation.md`: layout inicial de LVM y
+  `/srv`.
+- `docs/architecture/initial-backup-and-restore.md`: modelo temporal de backup
+  y restore usando `BACKUP_2TB`.
+- `docs/architecture/application-platform-phase-4.md`: decisión y evidencia de
+  la plataforma k3s inicial.
+- `docs/architecture/initial-k3s-storage.md`: StorageClass `local-path-srv`,
+  Local Path Provisioner y smoke test dinámico.
 - `docs/reference/openpanel-project-devops.md`: referencia histórica del
   proyecto OpenPanel / Project-DevOps.
 - `docs/reference/original-context/`: documentos originales archivados como

@@ -60,8 +60,10 @@ separate backup policy for persistent data, and keeps free LVM capacity for
 future growth or new volumes once real service requirements exist.
 
 The project intentionally does not create many service-specific volumes yet.
-The exact runtime, Kubernetes distribution, storage class, backup tooling, and
-first persistent services are still undecided.
+Since this foundation was created, the initial application runtime has been
+selected as k3s and the initial Kubernetes dynamic storage class has been
+selected as `local-path-srv`, backed by `/srv/k3s/storage`. Backup tooling and
+first production persistent services remain undecided.
 
 ## Applied Scope
 
@@ -81,3 +83,9 @@ data have not been moved.
 Future directories under `/srv` may include service data, backup staging, or
 restore work areas, but they should be created just in time when a concrete
 service or workflow requires them.
+
+Current Kubernetes use under `/srv`:
+
+- `/srv/k3s/storage` is the data root for the `local-path-srv` StorageClass.
+- Temporary smoke-test directories under `/srv/k3s-test` were used for initial
+  persistence validation and then removed after backup/restore validation.

@@ -356,12 +356,12 @@ The source, backup, and restored file SHA256 values matched:
 ```
 
 The `homelab-persistence-test` namespace was deleted after validation. The
-local source evidence file remains on the server under
-`/srv/k3s-test/persistent-smoke/proof.txt`.
+temporary local evidence directory under `/srv/k3s-test` was also deleted after
+backup/restore validation.
 
-This validates a minimal persistence and restore path for the current
-single-node host. It does not select a final Kubernetes storage class, dynamic
-provisioner, NAS model, or multi-node storage strategy.
+This validated a minimal persistence and restore path for the current
+single-node host before dynamic PVC storage was introduced. It did not select a
+final NAS model or multi-node storage strategy.
 
 ## Workstation kubeconfig Convention
 
@@ -421,10 +421,8 @@ Phase 4 can be considered complete when:
 
 ## Open Questions
 
-- Which lightweight Kubernetes distribution is preferred for this host?
-- Should the first proof use a stateless workload first, then a separate
-  persistence smoke test?
+- What validation should run before GitOps is introduced in Phase 5?
 - Should container runtime data stay on `/`, move under `/srv`, or use a
   dedicated future LVM volume?
 - What is the minimum acceptable local ingress model for LAN-only testing?
-- What validation should run before GitOps is introduced in Phase 5?
+- What should be the first reproducible workload deployed from Git?

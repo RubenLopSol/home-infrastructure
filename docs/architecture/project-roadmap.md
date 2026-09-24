@@ -91,18 +91,19 @@ Exit criteria:
 
 Goal: install and verify the first physical Home Lab host.
 
-Current status: base Ubuntu Server installation is complete. Full inventory and
-post-install baseline work are still in progress.
+Current status: base Ubuntu Server installation and initial host inventory are
+complete. Later hardening and monitoring work continues in subsequent phases.
 
 Tasks:
 
 - Install Ubuntu Server 26.04.1 LTS on the Acer Aspire E5-571G. Completed.
 - Record CPU, RAM, disk, network interfaces, firmware/BIOS notes, and storage.
+  Completed for the initial host inventory.
 - Check disk health, SMART data where available, temperatures, and basic
-  stability.
+  stability. Completed for the initial inventory level.
 - Validate network connectivity, DNS, SSH, firewall state, and virtualization
-  support.
-- Document the verified host state.
+  support. Completed for the initial inventory level.
+- Document the verified host state. Completed.
 
 Exit criteria:
 
@@ -118,6 +119,8 @@ Tasks:
 
 - Define users, SSH access, package/update policy, and basic hardening.
 - Define local storage layout.
+- Apply and validate the initial `/srv` LVM storage boundary.
+- Define and validate a temporary backup/restore path using `BACKUP_2TB`.
 - Decide what host configuration should be automated and with which tool.
 - Establish basic host monitoring if approved.
 - Establish an initial backup path for important host configuration.
@@ -160,16 +163,18 @@ Tasks:
 
 - Define storage categories: configuration, secrets, application data, media,
   recordings, backups.
-- Define backup targets and off-site strategy.
+- Define backup targets and off-site strategy. Initial temporary target
+  completed with `BACKUP_2TB`; final NAS/off-site strategy remains TBD.
 - Define retention and encryption requirements.
 - Define restore tests for early services.
 - Decide when NAS or other backup/storage hardware is needed.
 
 Exit criteria:
 
-- There is a backup/restore matrix.
+- The initial storage/backup foundation is documented and tested.
 - A backup is not considered valid until restore has been tested.
-- Stateful services have an explicit recovery path before they become critical.
+- Stateful production services still need an explicit recovery path before they
+  become critical.
 
 ## Phase 8 - Application Platform Decision
 
@@ -178,10 +183,13 @@ Goal: decide whether Kubernetes enters the first implementation and how.
 Tasks:
 
 - Decide whether Kubernetes is appropriate for the current host and services.
-- Select Kubernetes distribution and version if approved.
+  Completed: k3s was selected for the initial single-node platform.
+- Record the selected Kubernetes distribution and version. Completed: k3s
+  `v1.36.4+k3s1`.
 - Define storage, ingress, namespaces, resource limits, security contexts, and
   network policies at the level needed for the first deployment.
 - Deploy only a small test workload first, with persistence if stateful.
+  Completed for stateless, temporary `hostPath`, and dynamic PVC smoke tests.
 
 Exit criteria:
 

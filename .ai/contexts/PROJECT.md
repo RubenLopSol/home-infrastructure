@@ -11,8 +11,12 @@ Core principle:
 Production-grade practices, adapted to homelab scale.
 ```
 
-The project is currently in repository/context-system design. Infrastructure
-implementation has not started.
+The project has moved beyond repository/context-system design. The repository,
+base Ubuntu Server host, `/srv` storage foundation, temporary backup/restore
+path, and initial single-node k3s platform with `local-path-srv` storage are
+implemented and documented. Production home services, GitOps, observability,
+final secret management, NAS integration, and dedicated network/storage
+hardware remain future work.
 
 The platform should be versioned, reproducible, automated, observable, secure,
 recoverable, testable, documented, maintainable, and simple enough to operate
