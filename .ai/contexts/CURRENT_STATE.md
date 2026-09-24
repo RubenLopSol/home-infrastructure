@@ -138,6 +138,9 @@ pending revalidation.
 - User `ruben` is in groups: `ruben`, `adm`, `cdrom`, `sudo`, `dip`,
   `plugdev`, `users`, `lxd`.
 - System timezone is `Etc/UTC`; NTP is active and synchronized.
+- User `ruben` has reversible shell usability helpers installed in
+  `~/.bashrc`, with the previous file backed up as
+  `~/.bashrc.backup-20260924-111133`.
 - The following have not yet been executed/configured:
   - remaining host hardening
   - Docker/Podman

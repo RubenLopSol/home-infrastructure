@@ -389,6 +389,12 @@ Observed identity:
 
 The initial administrative user `ruben` is a member of the `sudo` group.
 
+Shell usability helpers were added to `~/.bashrc` for `ruben` on
+2026-09-24. The block is marked with `homelab shell helpers`, adds only
+dependency-free prompt/history/alias improvements, and was syntax-checked with
+`bash -n ~/.bashrc`. The previous file was backed up as
+`~/.bashrc.backup-20260924-111133`.
+
 Observed time state:
 
 | Item | Value |
