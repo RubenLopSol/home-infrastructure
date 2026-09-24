@@ -44,6 +44,8 @@ state or a task note.
   - Exit: durable storage and basic restore path are tested.
 
 - [ ] Phase 4 - Application Platform
+  - [x] Initial Phase 4 design proposal has been drafted at
+    `docs/architecture/application-platform-phase-4.md`.
   - Decide whether and how to introduce Kubernetes.
   - If approved, define distro/version, storage, ingress, policies, and
     recovery requirements before implementation.

@@ -26,6 +26,8 @@ pending revalidation.
 - Phase 2B future network design is pending future hardware purchases and decisions.
 - Ubuntu Server base installation is complete.
 - Phase 3 host, storage, and backup foundation is complete.
+- Phase 4 application-platform design has started with a proposal document at
+  `docs/architecture/application-platform-phase-4.md`.
 - Infrastructure platform implementation has not started.
 - No Kubernetes, Terraform, Ansible, GitOps, NAS, dedicated firewall/router,
   managed switch, dedicated wired AP, UPS, VLAN, AdGuard Home, SOPS/age,
