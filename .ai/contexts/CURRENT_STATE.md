@@ -109,6 +109,12 @@ pending revalidation.
   `/etc/ssh/sshd_config.d/10-homelab-hardening.conf`.
 - SSH configuration validation with `sshd -t` succeeded before reload.
 - A second SSH session using the key/alias was verified after reloading SSH.
+- Laptop lid close handling is configured for server use through
+  `/etc/systemd/logind.conf.d/10-homelab-lid.conf`, with
+  `HandleLidSwitch=ignore`, `HandleLidSwitchExternalPower=ignore`, and
+  `HandleLidSwitchDocked=ignore`.
+- SSH access and `kubectl get nodes` were verified from the workstation after
+  closing the laptop lid; k3s remained `Ready`.
 
 ## Initial Application Platform State
 

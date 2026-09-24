@@ -395,6 +395,20 @@ dependency-free prompt/history/alias improvements, and was syntax-checked with
 `bash -n ~/.bashrc`. The previous file was backed up as
 `~/.bashrc.backup-20260924-111133`.
 
+Laptop lid handling was configured for server use on 2026-09-24 through
+`/etc/systemd/logind.conf.d/10-homelab-lid.conf`:
+
+```ini
+[Login]
+HandleLidSwitch=ignore
+HandleLidSwitchExternalPower=ignore
+HandleLidSwitchDocked=ignore
+```
+
+After closing the lid, SSH access from the workstation was verified with
+`ssh homelab-server-01 uptime`, and k3s node readiness was verified with
+`ssh homelab-server-01 kubectl get nodes`.
+
 Observed time state:
 
 | Item | Value |
