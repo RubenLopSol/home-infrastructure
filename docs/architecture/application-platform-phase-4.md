@@ -3,9 +3,10 @@
 This document starts Phase 4: deciding whether and how to introduce an
 application platform on `homelab-server-01`.
 
-It is a design proposal, not an implementation record. No Kubernetes runtime,
-container runtime, GitOps controller, ingress controller, storage provisioner,
-or monitoring stack has been installed.
+It began as a design proposal and now records the initial application-platform
+decision. A first k3s installation may be performed from this plan, but GitOps,
+ingress, persistent storage, production services, and monitoring remain outside
+the initial scope.
 
 ## Goal
 
@@ -135,10 +136,10 @@ is not intended to run even early test workloads.
 
 ## Initial Recommendation
 
-Recommended direction for review:
+Accepted direction:
 
 ```text
-Proceed with Option B, but only as a constrained single-node test platform.
+Proceed with k3s as a constrained initial single-node Kubernetes platform.
 ```
 
 The first Kubernetes iteration should be treated as a platform proof, not a
@@ -152,10 +153,90 @@ then prove:
 - backup and restore behavior is understood for that workload
 - platform removal or rebuild does not threaten network access
 
-Distribution, version, CNI, ingress, storage class, and backup tooling remain
-TBD until reviewed. The next design step should compare lightweight Kubernetes
-distributions and select one only after checking current compatibility and
-maintenance status.
+This is an initial single-node cluster, not a permanent one-node architecture.
+Future workers or additional server/control-plane nodes may be introduced in
+later phases, but the initial storage and availability model must not pretend
+to be multi-node.
+
+Initial k3s installation choices:
+
+| Area | Decision |
+|---|---|
+| Distribution | k3s |
+| Topology | Initial single-node server on `homelab-server-01` |
+| Network exposure | LAN/private only |
+| Critical network functions | Outside Kubernetes |
+| CNI | Default k3s Flannel for the initial proof |
+| CoreDNS | Keep packaged CoreDNS for cluster-internal DNS |
+| Metrics server | Keep packaged metrics server for basic cluster metrics |
+| Traefik | Disable initially |
+| ServiceLB | Disable initially |
+| Local storage provisioner | Disable initially |
+| GitOps | Not installed in Phase 4 initial proof |
+
+Traefik, ServiceLB, and local-storage are disabled initially so ingress,
+load-balancing, and persistent-volume layout can be designed deliberately
+instead of accepted accidentally.
+
+## Installation Plan
+
+Before installation:
+
+- Host has been upgraded and rebooted into kernel `7.0.0-34-generic`.
+- `/` has approximately 86G free.
+- `/srv` is mounted and has approximately 75G free.
+- UFW is active with default incoming deny and OpenSSH allowed.
+- k3s requirements were checked against the official documentation on
+  2026-09-24.
+
+Planned UFW stance:
+
+- Keep UFW enabled.
+- Keep SSH allowed.
+- Allow Kubernetes API `6443/tcp` from the LAN only.
+- Allow default k3s pod CIDR `10.42.0.0/16`.
+- Allow default k3s service CIDR `10.43.0.0/16`.
+- Do not expose Flannel VXLAN `8472/udp` outside the local host/LAN.
+
+Initial install command:
+
+```bash
+curl -sfL https://get.k3s.io | \
+  INSTALL_K3S_CHANNEL=stable \
+  INSTALL_K3S_EXEC="server \
+    --node-name homelab-server-01 \
+    --node-ip 192.168.1.181 \
+    --write-kubeconfig-mode 644 \
+    --disable traefik \
+    --disable servicelb \
+    --disable local-storage" \
+  sh -
+```
+
+Initial validation:
+
+```bash
+sudo systemctl status k3s --no-pager
+kubectl get nodes -o wide
+kubectl get pods -A
+kubectl get storageclass
+kubectl get ingressclass
+sudo ufw status verbose
+```
+
+Expected initial state:
+
+- one ready node named `homelab-server-01`
+- system pods running
+- no default StorageClass from k3s local-storage
+- no Traefik ingress class
+- no public exposure
+
+Rollback command if the initial installation is rejected:
+
+```bash
+sudo /usr/local/bin/k3s-uninstall.sh
+```
 
 ## Candidate First Workload
 

@@ -41,12 +41,19 @@
   additional physical compute nodes can be integrated cleanly in the future.
 - Critical Home Lab infrastructure must not depend on a future optional AI
   compute node being powered on or present.
+- Use k3s as the initial Kubernetes distribution for Phase 4.
+- Start k3s as an initial single-node cluster on `homelab-server-01`, while
+  preserving future multi-node expansion as a design requirement.
+- Keep the initial k3s installation LAN/private and non-critical; do not place
+  routing, DHCP, firewall policy, DNS dependency, or recovery access inside it.
+- Disable packaged Traefik, ServiceLB, and local-storage during the initial
+  k3s installation so ingress/load balancing and persistent storage can be
+  designed deliberately.
 - Keep frequently loaded AI context small.
 - Model escalation and reasoning-effort escalation require explicit approval.
 
 ## PROPOSED
 
-- Kubernetes as the application/service platform.
 - GitHub Actions for CI and validation.
 - Argo CD for GitOps reconciliation.
 - Argo Rollouts for services where progressive delivery provides real value.
