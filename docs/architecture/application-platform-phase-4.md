@@ -363,6 +363,26 @@ This validates a minimal persistence and restore path for the current
 single-node host. It does not select a final Kubernetes storage class, dynamic
 provisioner, NAS model, or multi-node storage strategy.
 
+## Workstation kubeconfig Convention
+
+The workstation keeps Kubernetes cluster access explicit rather than relying on
+a global current context.
+
+Current convention:
+
+- `~/.kube/config` is intentionally a neutral/base config with no active
+  context.
+- `~/.kube/homelab-k3s.yaml` contains the kubeconfig for
+  `homelab-server-01`.
+- `~/.zshrc` defines `kh` as:
+
+```bash
+alias kh='KUBECONFIG=$HOME/.kube/homelab-k3s.yaml kubectl'
+```
+
+This keeps homelab k3s commands explicit and avoids accidental interaction
+with Minikube or future clusters.
+
 ## Candidate First Workload
 
 The first workload should be intentionally boring:
