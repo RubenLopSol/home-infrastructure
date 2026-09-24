@@ -51,9 +51,11 @@ state or a task note.
   - [x] Initial k3s platform installed and validated with no Traefik,
     ServiceLB, or default local-storage provisioner.
   - [x] Stateless nginx smoke workload validated and cleaned up.
-  - [ ] Define first workload and persistence model.
-  - [ ] Validate sample workload restart/redeploy behavior.
-  - [ ] Validate restore behavior for any persistent test data.
+  - [x] First persistence smoke model defined as a temporary `hostPath` mount
+    under `/srv/k3s-test/persistent-smoke`.
+  - [x] Persistent smoke pod recreation behavior validated.
+  - [x] Backup and restore behavior for persistent smoke data validated with
+    `BACKUP_2TB`.
   - Exit: sample persistent workload survives restart and recovery exercise.
 
 - [ ] Phase 5 - GitOps and Lifecycle

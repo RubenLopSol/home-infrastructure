@@ -312,6 +312,57 @@ This validated basic scheduling, CoreDNS, ClusterIP service routing, and
 Deployment reconciliation. It did not validate persistence, ingress, backup, or
 restore behavior.
 
+## Persistent Workload Smoke Test
+
+A first persistent workload smoke test was completed on 2026-09-24. This was a
+temporary `hostPath` proof, not the final storage architecture.
+
+Test scope:
+
+- namespace: `homelab-persistence-test`
+- pod: `persistence-smoke`
+- image: `busybox:1.36`
+- host path: `/srv/k3s-test/persistent-smoke`
+- container mount path: `/data`
+- test file: `proof.txt`
+
+Test file content:
+
+```text
+persistent-smoke 2026-09-24T13:19:50Z
+```
+
+Validated behavior:
+
+- The pod mounted `/srv/k3s-test/persistent-smoke` at `/data`.
+- The test file was written from inside the pod.
+- The same file was visible from the host.
+- Deleting and recreating the pod preserved the file.
+- SHA256 from host and pod matched:
+  `854e5a4400247788ce16403d6875af766b4202124bae3b5ded35502c8a8ea34b`.
+
+Backup and restore validation:
+
+| Item | Path |
+|---|---|
+| Source on server | `/srv/k3s-test/persistent-smoke/proof.txt` |
+| Backup on `BACKUP_2TB` | `/media/kiyana/BACKUP_2TB/HomeLab/backups/2026-09-24-k3s-persistence-smoke/persistent-smoke/proof.txt` |
+| Restore test on workstation | `/tmp/homelab-restore-test-2026-09-24-k3s-persistence/persistent-smoke/proof.txt` |
+
+The source, backup, and restored file SHA256 values matched:
+
+```text
+854e5a4400247788ce16403d6875af766b4202124bae3b5ded35502c8a8ea34b
+```
+
+The `homelab-persistence-test` namespace was deleted after validation. The
+local source evidence file remains on the server under
+`/srv/k3s-test/persistent-smoke/proof.txt`.
+
+This validates a minimal persistence and restore path for the current
+single-node host. It does not select a final Kubernetes storage class, dynamic
+provisioner, NAS model, or multi-node storage strategy.
+
 ## Candidate First Workload
 
 The first workload should be intentionally boring:

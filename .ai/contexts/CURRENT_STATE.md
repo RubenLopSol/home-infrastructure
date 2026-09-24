@@ -157,6 +157,26 @@ pending revalidation.
   - Deleting the nginx pod caused the Deployment to recreate it successfully.
   - The `homelab-test` namespace was deleted after validation, leaving no
     manual test workload running.
+- A temporary persistent smoke workload was validated in namespace
+  `homelab-persistence-test` using `busybox:1.36` and a `hostPath` mount:
+  - Host path: `/srv/k3s-test/persistent-smoke`.
+  - Container mount path: `/data`.
+  - Test file: `/srv/k3s-test/persistent-smoke/proof.txt`.
+  - Test content: `persistent-smoke 2026-09-24T13:19:50Z`.
+  - SHA256:
+    `854e5a4400247788ce16403d6875af766b4202124bae3b5ded35502c8a8ea34b`.
+  - The file was written from inside the pod and verified from the host.
+  - The pod was deleted and recreated, and the file remained available from
+    inside the recreated pod with matching SHA256.
+  - Backup to workstation-mounted external disk `BACKUP_2TB` was validated at
+    `/media/kiyana/BACKUP_2TB/HomeLab/backups/2026-09-24-k3s-persistence-smoke/persistent-smoke/`.
+  - Restore was validated on the workstation at
+    `/tmp/homelab-restore-test-2026-09-24-k3s-persistence/persistent-smoke/`.
+  - Source, backup, and restored file SHA256 values matched.
+  - The `homelab-persistence-test` namespace was deleted after validation,
+    leaving no manual persistent test pod running.
+  - The local source evidence file remains on the server under
+    `/srv/k3s-test/persistent-smoke/proof.txt`.
 
 ## First Boot Observations
 
