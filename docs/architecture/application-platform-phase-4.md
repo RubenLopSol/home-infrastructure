@@ -374,14 +374,15 @@ Current convention:
   context.
 - `~/.kube/homelab-k3s.yaml` contains the kubeconfig for
   `homelab-server-01`.
-- `~/.zshrc` defines `kh` as:
+- `~/.zshrc` defines `khome` as:
 
 ```bash
-alias kh='KUBECONFIG=$HOME/.kube/homelab-k3s.yaml kubectl'
+alias khome='KUBECONFIG=$HOME/.kube/homelab-k3s.yaml kubectl'
 ```
 
-This keeps homelab k3s commands explicit and avoids accidental interaction
-with Minikube or future clusters.
+The workstation convention is one kubeconfig file per cluster, with aliases
+named by cluster or purpose. This keeps homelab k3s commands explicit and
+avoids accidental interaction with Minikube or future clusters.
 
 ## Candidate First Workload
 
