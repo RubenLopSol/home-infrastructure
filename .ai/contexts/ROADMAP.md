@@ -46,9 +46,13 @@ state or a task note.
 - [ ] Phase 4 - Application Platform
   - [x] Initial Phase 4 design proposal has been drafted at
     `docs/architecture/application-platform-phase-4.md`.
-  - Decide whether and how to introduce Kubernetes.
-  - If approved, define distro/version, storage, ingress, policies, and
-    recovery requirements before implementation.
+  - [x] Initial Kubernetes distribution/topology decision: k3s single-node on
+    `homelab-server-01`, preserving future multi-node expansion.
+  - [x] Initial k3s platform installed and validated with no Traefik,
+    ServiceLB, or default local-storage provisioner.
+  - [ ] Define first workload and persistence model.
+  - [ ] Validate sample workload restart/redeploy behavior.
+  - [ ] Validate restore behavior for any persistent test data.
   - Exit: sample persistent workload survives restart and recovery exercise.
 
 - [ ] Phase 5 - GitOps and Lifecycle

@@ -28,11 +28,13 @@ pending revalidation.
 - Phase 3 host, storage, and backup foundation is complete.
 - Phase 4 application-platform design has started with a proposal document at
   `docs/architecture/application-platform-phase-4.md`.
-- Infrastructure platform implementation has not started.
-- No Kubernetes, Terraform, Ansible, GitOps, NAS, dedicated firewall/router,
+- Initial k3s single-node Kubernetes platform implementation has started on
+  `homelab-server-01`.
+- No Terraform, Ansible, GitOps, NAS, dedicated firewall/router,
   managed switch, dedicated wired AP, UPS, VLAN, AdGuard Home, SOPS/age,
-  GitHub Actions, Argo CD, or Argo Rollouts implementation has been created by
-  this repository.
+  GitHub Actions, Argo CD, Argo Rollouts, ingress controller, default storage
+  class, or production workload implementation has been created by this
+  repository.
 - Current available network hardware is limited to the ISP/router, existing
   repeaters, and `homelab-server-01`. Additional network/storage/power hardware
   has not been purchased yet.
@@ -107,6 +109,39 @@ pending revalidation.
   `/etc/ssh/sshd_config.d/10-homelab-hardening.conf`.
 - SSH configuration validation with `sshd -t` succeeded before reload.
 - A second SSH session using the key/alias was verified after reloading SSH.
+
+## Initial Application Platform State
+
+- k3s is installed on `homelab-server-01`.
+- k3s release installed from the stable channel: `v1.36.4+k3s1`.
+- k3s is running as a systemd service and is enabled at boot.
+- Node name: `homelab-server-01`.
+- Node status: `Ready`.
+- Node role: `control-plane`.
+- Kubernetes internal node IP: `192.168.1.181`.
+- Container runtime: `containerd://2.3.4-k3s1.36`.
+- Packaged CoreDNS is enabled and running.
+- Packaged metrics-server is enabled and running.
+- Packaged Traefik was disabled during installation.
+- Packaged ServiceLB was disabled during installation.
+- Packaged local-storage provisioner was disabled during installation.
+- `kubectl get storageclass` returned no resources after installation.
+- `kubectl get ingressclass` returned no resources after installation.
+- Initial observed Kubernetes node metrics:
+  - CPU: `154m`, approximately 3%.
+  - Memory: `703Mi`, approximately 6%.
+- Initial observed system pod metrics:
+  - CoreDNS: `5m` CPU, `11Mi` memory.
+  - metrics-server: `15m` CPU, `18Mi` memory.
+- Initial `/var/lib/rancher/k3s` size: `467M`.
+- UFW remains active with OpenSSH allowed, Kubernetes API `6443/tcp` allowed
+  from `192.168.1.0/24`, pod CIDR `10.42.0.0/16` allowed, and service CIDR
+  `10.43.0.0/16` allowed.
+- `/etc/sysctl.d/99-k3s.conf` sets:
+  - `net.ipv4.ip_forward = 1`
+  - `net.bridge.bridge-nf-call-iptables = 1`
+  - `net.bridge.bridge-nf-call-ip6tables = 1`
+- Kernel modules `overlay` and `br_netfilter` were loaded and verified.
 
 ## First Boot Observations
 

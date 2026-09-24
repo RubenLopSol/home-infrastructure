@@ -4,9 +4,8 @@ This document starts Phase 4: deciding whether and how to introduce an
 application platform on `homelab-server-01`.
 
 It began as a design proposal and now records the initial application-platform
-decision. A first k3s installation may be performed from this plan, but GitOps,
-ingress, persistent storage, production services, and monitoring remain outside
-the initial scope.
+decision and first k3s installation evidence. GitOps, ingress, persistent
+storage, production services, and monitoring remain outside the initial scope.
 
 ## Goal
 
@@ -237,6 +236,54 @@ Rollback command if the initial installation is rejected:
 ```bash
 sudo /usr/local/bin/k3s-uninstall.sh
 ```
+
+## Installation Evidence
+
+Initial k3s installation was completed on 2026-09-24.
+
+Observed install result:
+
+| Item | Value |
+|---|---|
+| k3s version | `v1.36.4+k3s1` |
+| Service | `k3s.service` active and enabled |
+| Node | `homelab-server-01` |
+| Node status | `Ready` |
+| Node role | `control-plane` |
+| Internal IP | `192.168.1.181` |
+| Runtime | `containerd://2.3.4-k3s1.36` |
+| CoreDNS | running |
+| metrics-server | running |
+| StorageClass resources | none |
+| IngressClass resources | none |
+| Initial k3s data size | `467M` under `/var/lib/rancher/k3s` |
+
+Initial resource observation:
+
+| Scope | CPU | Memory |
+|---|---:|---:|
+| Node | `154m` / 3% | `703Mi` / 6% |
+| CoreDNS pod | `5m` | `11Mi` |
+| metrics-server pod | `15m` | `18Mi` |
+
+UFW after installation:
+
+| Rule | Source | Purpose |
+|---|---|---|
+| OpenSSH | anywhere | administration |
+| `6443/tcp` | `192.168.1.0/24` | Kubernetes API from LAN |
+| any | `10.42.0.0/16` | k3s pods |
+| any | `10.43.0.0/16` | k3s services |
+
+Kernel/network preparation applied before installation:
+
+```text
+net.ipv4.ip_forward = 1
+net.bridge.bridge-nf-call-iptables = 1
+net.bridge.bridge-nf-call-ip6tables = 1
+```
+
+The `overlay` and `br_netfilter` modules were loaded and verified.
 
 ## Candidate First Workload
 
