@@ -10,6 +10,11 @@ platform: Git as source of truth, validated changes, reproducible deployment,
 observability, secure secrets, backups, restore testing, and operational
 documentation.
 
+Future design must preserve modular horizontal expansion. The initial Acer
+server remains the current starting point, but future decisions should avoid
+unnecessary dependence on any single physical compute server when a portable or
+service-oriented abstraction is appropriate.
+
 Critical network-plane functions must stay outside Kubernetes:
 
 - Internet routing
@@ -32,10 +37,18 @@ Future expansion may introduce separate failure and security domains:
 router/firewall != application server != backup/storage system
 ```
 
+The target architecture should remain able to integrate additional physical
+compute nodes, stronger general-purpose compute, dedicated storage/NAS, and an
+optional dedicated AI compute node without fundamental redesign. Any future AI
+node is an independent optional compute capability: critical Home Lab
+infrastructure must continue operating if it is powered off, unavailable,
+upgraded, rebuilt, or permanently removed.
+
 Current available network hardware is limited to the ISP/router, existing
 repeaters, and `homelab-server-01`. Future dedicated hardware such as a
 router/firewall, managed switch, NAS, UPS, wired access points, or a larger
-application server remains proposed until explicitly decided and acquired.
+application server remains proposed until explicitly decided and acquired. A
+dedicated AI compute node is also only a proposed future capability.
 
 The previously proposed 32 GB RAM / 1 TB NVMe tower is a future option, not
 current state.
@@ -70,6 +83,11 @@ Kubernetes.
 
 AdGuard Home is proposed for DNS filtering and local DNS only when a recovery
 or fallback path exists so DNS does not become a single catastrophic dependency.
+
+Future network and storage evaluations should consider clean multi-server
+integration, including whether faster links such as 2.5 GbE or 10 GbE are
+justified for server, storage, or AI traffic. This is a design consideration,
+not a decision to purchase or deploy faster networking now.
 
 ## Recovery Principle
 

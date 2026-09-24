@@ -37,6 +37,10 @@
   deployed.
 - Do not create Kubernetes, Terraform, Ansible, or other implementation
   directories until they are actually required.
+- The target architecture must remain modular and horizontally expandable so
+  additional physical compute nodes can be integrated cleanly in the future.
+- Critical Home Lab infrastructure must not depend on a future optional AI
+  compute node being powered on or present.
 - Keep frequently loaded AI context small.
 - Model escalation and reasoning-effort escalation require explicit approval.
 
@@ -52,6 +56,8 @@
 - Dedicated firewall/router for routing, DHCP, firewall policy, VLANs, and
   WireGuard.
 - Managed switch, UPS, wired APs, and future larger application server.
+- Dedicated local AI compute node as an independent optional compute
+  capability that may provide LAN AI/LLM/agent services.
 - Observability with Prometheus, Grafana, Loki, and Alertmanager.
 - Per-service backup/restore matrix and restore-tested recovery.
 
@@ -64,6 +70,12 @@
 - Select final NAS model/disks/filesystem/share layout.
 - Select final backup tooling, retention, encryption, restore-test cadence, and
   off-site strategy.
+- Decide whether future network/storage hardware should use 1 GbE, 2.5 GbE,
+  10 GbE, or another approach based on measured requirements and cost.
+- Select any future AI server hardware, CPU architecture/vendor, GPU
+  vendor/model, VRAM/RAM/storage requirements, software stack, local models,
+  virtualization or Kubernetes integration, cost, and timing.
+- Decide exact future server count and physical topology.
 - Decide exact documentation language policy for future files.
 
 ## REJECTED
